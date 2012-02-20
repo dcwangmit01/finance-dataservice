@@ -36,3 +36,7 @@ gem 'jquery-rails'
 
 # To use debugger
 # gem 'ruby-debug19', :require => 'ruby-debug'
+
+###########################################################
+# Custom Section
+gem "friendly_id", "~> 4.0"
