@@ -1,34 +1,40 @@
 class TickersController < ApplicationController
   # GET /tickers
   # GET /tickers.json
+  # GET /tickers.xml
   def index
     @tickers = Ticker.all
 
     respond_to do |format|
       format.html # index.html.erb
       format.json { render json: @tickers }
+      format.xml  { render xml:  @tickers }
     end
   end
 
   # GET /tickers/1
   # GET /tickers/1.json
+  # GET /tickers/1.xml
   def show
     @ticker = Ticker.find(params[:id])
 
     respond_to do |format|
       format.html # show.html.erb
       format.json { render json: @ticker }
+      format.xml  { render xml:  @ticker }
     end
   end
 
   # GET /tickers/new
   # GET /tickers/new.json
+  # GET /tickers/new.xml
   def new
     @ticker = Ticker.new
 
     respond_to do |format|
       format.html # new.html.erb
       format.json { render json: @ticker }
+      format.xml  { render xml:  @ticker }
     end
   end
 
