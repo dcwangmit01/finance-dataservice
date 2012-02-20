@@ -1,0 +1,20 @@
+  <p>
+    <b>Indicator Type:</b>
+    <%= technical.indicator_type %>
+  </p>
+ 
+  <p>
+    <b>Date:</b>
+    <%= technical.date %>
+  </p>
+
+  <p>
+    <b>Value:</b>
+    <%= technical.value %>
+  </p>
+
+  <p>
+    <%= link_to 'Destroy Technical', [technical.ticker, technical],
+                 :confirm => 'Are you sure?',
+                 :method => :delete %>
+  </p>

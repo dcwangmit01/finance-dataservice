@@ -11,7 +11,18 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120220033810) do
+ActiveRecord::Schema.define(:version => 20120220051548) do
+
+  create_table "technicals", :force => true do |t|
+    t.string   "indicator_type"
+    t.date     "date"
+    t.integer  "value"
+    t.integer  "ticker_id"
+    t.datetime "created_at",     :null => false
+    t.datetime "updated_at",     :null => false
+  end
+
+  add_index "technicals", ["ticker_id"], :name => "index_technicals_on_ticker_id"
 
   create_table "tickers", :force => true do |t|
     t.string   "name"

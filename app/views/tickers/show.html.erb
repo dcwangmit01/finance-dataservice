@@ -10,6 +10,13 @@
   <%= @ticker.security_type %>
 </p>
 
+<h2>Technicals</h2>
+<%= render @ticker.technicals %>
+ 
+<h2>Add a technical:</h2>
+<%= render "technicals/form" %>
+ 
+<br />
 
 <%= link_to 'Edit', edit_ticker_path(@ticker) %> |
 <%= link_to 'Back', tickers_path %>

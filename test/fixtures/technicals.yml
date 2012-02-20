@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  indicator_type: MyString
+  date: 2012-02-19
+  value: 1
+  ticker: 
+
+two:
+  indicator_type: MyString
+  date: 2012-02-19
+  value: 1
+  ticker: 

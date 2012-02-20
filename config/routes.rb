@@ -1,5 +1,7 @@
 Dataservice::Application.routes.draw do
-  resources :tickers
+  resources :tickers do
+    resources :technicals
+  end
 
   # The priority is based upon order of creation:
   # first created -> highest priority.
