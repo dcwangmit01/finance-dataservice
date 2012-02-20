@@ -1,0 +1,16 @@
+
+
+http://ichart.finance.yahoo.com/table.csv?s=AKAM&a=01&b=6&c=2004&d=03&e=7&f=2012&g=d&ignore=.csv
+
+Feb 6 2004 to Apr 7 2012
+http://ichart.finance.yahoo.com/table.csv
+	?s=AKAM (stock ticker)
+	&a=01	(start month from 0)
+	&b=6	(start date from 1)
+	&c=2004 (start year)
+	&d=03   (end month from 0)
+	&e=7    (end date from 1)
+	&f=2012 (end year)
+	&g=d
+	&ignore=.csv
+
