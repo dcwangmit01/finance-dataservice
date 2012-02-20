@@ -2,8 +2,8 @@
 
 one:
   name: MyString
-  type: 
+  security_type: MyString
 
 two:
   name: MyString
-  type: 
+  security_type: MyString

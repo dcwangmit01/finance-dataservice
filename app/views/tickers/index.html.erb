@@ -3,7 +3,7 @@
 <table>
   <tr>
     <th>Name</th>
-    <th>Type</th>
+    <th>Security type</th>
     <th></th>
     <th></th>
     <th></th>
@@ -12,7 +12,7 @@
 <% @tickers.each do |ticker| %>
   <tr>
     <td><%= ticker.name %></td>
-    <td><%= ticker.type %></td>
+    <td><%= ticker.security_type %></td>
     <td><%= link_to 'Show', ticker %></td>
     <td><%= link_to 'Edit', edit_ticker_path(ticker) %></td>
     <td><%= link_to 'Destroy', ticker, confirm: 'Are you sure?', method: :delete %></td>
