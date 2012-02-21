@@ -1,9 +1,16 @@
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
 
 one:
-  name: MyString
-  security_type: MyString
+  name: akam
+  security_type: stock
+  underlying: akam
 
 two:
-  name: MyString
-  security_type: MyString
+  name: AKAM120317C00021000
+  security_type: option
+  underlying: akam
+
+three:
+  name: csco
+  security_type: stock
+  underlying: csco

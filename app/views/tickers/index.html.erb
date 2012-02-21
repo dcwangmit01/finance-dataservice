@@ -4,6 +4,7 @@
   <tr>
     <th>Name</th>
     <th>Security type</th>
+    <th>Underlying</th>
     <th></th>
     <th></th>
     <th></th>
@@ -13,6 +14,7 @@
   <tr>
     <td><%= ticker.name %></td>
     <td><%= ticker.security_type %></td>
+    <td><%= ticker.underlying %></td>
     <td><%= link_to 'Show', ticker %></td>
     <td><%= link_to 'Edit', edit_ticker_path(ticker) %></td>
     <td><%= link_to 'Destroy', ticker, confirm: 'Are you sure?', method: :delete %></td>

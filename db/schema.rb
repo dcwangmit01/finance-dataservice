@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120220051548) do
+ActiveRecord::Schema.define(:version => 20120221014635) do
 
   create_table "technicals", :force => true do |t|
     t.string   "indicator_type"
@@ -29,6 +29,7 @@ ActiveRecord::Schema.define(:version => 20120220051548) do
     t.string   "security_type"
     t.datetime "created_at",    :null => false
     t.datetime "updated_at",    :null => false
+    t.string   "underlying"
   end
 
 end
