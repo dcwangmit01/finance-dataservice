@@ -26,15 +26,7 @@ class Ticker < ActiveRecord::Base
   }
 
   validates :underlying,
-  :presence => true,
-  :length => {
-    :minimum => 4,
-    :maximum => 32
-  },
-  :format => {
-    :with => /\A[a-z0-9]+\z/i,
-    :message => "Valid values are AlphaNumeric Only"
-  }
+  :presence => false
 
   has_many :technicals, :dependent => :destroy
   validates_associated :technicals
