@@ -40,3 +40,4 @@ gem 'jquery-rails'
 ###########################################################
 # Custom Section
 gem "friendly_id", "~> 4.0"
+gem "log4r"

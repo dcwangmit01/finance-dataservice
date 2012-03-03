@@ -3,7 +3,7 @@ class CreateTickers < ActiveRecord::Migration
     create_table :tickers do |t|
       t.string :name
       t.string :security_type
-
+      t.integer :underlying, :default => 0
       t.timestamps
     end
   end

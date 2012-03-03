@@ -55,5 +55,22 @@ module Dataservice
 
     # Version of your assets, change this if you want to expire all your assets
     config.assets.version = '1.0'
+
+
+    #####################################################################
+    # Begin Custom Section
+
+    # Disable colorized Rails Logging
+    config.colorize_logging = false
+
+    # Set Rails Timezone
+    config.time_zone = "Pacific Time (US & Canada)"
+
+    # Configuration Log4r
+    require 'log4r'
+    require 'log4r/configurator'
+    Log4r::Configurator.load_xml_file('./conf/log4r.xml')
+    config.logger = Log4r::Logger[Rails.env] # Sets the Rails logger
+    
   end
 end

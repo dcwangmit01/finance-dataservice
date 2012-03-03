@@ -11,13 +11,13 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120228051333) do
+ActiveRecord::Schema.define(:version => 20120220051548) do
 
   create_table "technicals", :force => true do |t|
-    t.string   "indicator_type"
-    t.date     "date"
-    t.integer  "value"
     t.integer  "ticker_id"
+    t.string   "indicator_type"
+    t.integer  "value"
+    t.date     "date"
     t.datetime "created_at",     :null => false
     t.datetime "updated_at",     :null => false
   end
@@ -27,9 +27,9 @@ ActiveRecord::Schema.define(:version => 20120228051333) do
   create_table "tickers", :force => true do |t|
     t.string   "name"
     t.string   "security_type"
-    t.datetime "created_at",    :null => false
-    t.datetime "updated_at",    :null => false
-    t.integer  "underlying"
+    t.integer  "underlying",    :default => 0
+    t.datetime "created_at",                   :null => false
+    t.datetime "updated_at",                   :null => false
   end
 
 end

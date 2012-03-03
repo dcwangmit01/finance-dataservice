@@ -3,14 +3,14 @@
 one:
   name: akam
   security_type: stock
-  underlying: akam
+  underlying: 1
 
 two:
   name: AKAM120317C00021000
   security_type: option
-  underlying: akam
+  underlying: 1
 
 three:
   name: csco
   security_type: stock
-  underlying: csco
+  underlying: 2
