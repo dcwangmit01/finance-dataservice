@@ -12,28 +12,28 @@ Log Configuration
   <!-- Outputters -->
   <outputter name="console" type="StdoutOutputter" level="DEBUG" >
     <formatter type="Log4r::PatternFormatter">
-      <pattern>[%d %5l %t]\n  %m</pattern>
+      <pattern>[%d %T] %M</pattern>
     </formatter>
   </outputter>
   
   <outputter name="development_outputter" type="FileOutputter">
     <filename>log/development.log</filename>
     <formatter type="Log4r::PatternFormatter">
-      <pattern>[%d %5l %t]\n  %m</pattern>
+      <pattern>[%d %t] %M</pattern>
     </formatter>
   </outputter>
 
   <outputter name="production_outputter" type="FileOutputter">
     <filename>log/production.log</filename>
     <formatter type="Log4r::PatternFormatter">
-      <pattern>[%d %5l %t]\n  %m</pattern>
+      <pattern>[%d %t] %M</pattern>
     </formatter>
   </outputter>
 
   <outputter name="test_outputter" type="FileOutputter">
     <filename>log/test.log</filename>
     <formatter type="Log4r::PatternFormatter">
-      <pattern>[%d %5l %t]\n  %m</pattern>
+      <pattern>[%d %t] %M</pattern>
     </formatter>
   </outputter>
 

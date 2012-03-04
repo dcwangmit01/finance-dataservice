@@ -71,6 +71,9 @@ module Dataservice
     require 'log4r/configurator'
     Log4r::Configurator.load_xml_file('./conf/log4r.xml')
     config.logger = Log4r::Logger[Rails.env] # Sets the Rails logger
-    
+
+    # Uncomment to disable SQL Debug logging
+    # ActiveRecord::Base.logger = Logger.new('/dev/null')
+
   end
 end
