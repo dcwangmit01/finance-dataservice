@@ -42,3 +42,4 @@ gem 'jquery-rails'
 gem "friendly_id", "~> 4.0"
 gem "log4r"
 gem "mechanize"
+gem "json"

@@ -126,6 +126,7 @@ DEPENDENCIES
   coffee-rails (~> 3.2.1)
   friendly_id (~> 4.0)
   jquery-rails
+  json
   log4r
   mechanize
   mysql2

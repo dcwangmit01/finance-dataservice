@@ -13,13 +13,14 @@
 
 ActiveRecord::Schema.define(:version => 20120220051548) do
 
-  create_table "technicals", :force => true do |t|
-    t.integer  "ticker_id"
+  create_table "technicals", :id => false, :force => true do |t|
+    t.integer  "id",                            :null => false
+    t.integer  "ticker_id",      :default => 0, :null => false
     t.string   "indicator_type"
     t.integer  "value"
     t.date     "date"
-    t.datetime "created_at",     :null => false
-    t.datetime "updated_at",     :null => false
+    t.datetime "created_at",                    :null => false
+    t.datetime "updated_at",                    :null => false
   end
 
   add_index "technicals", ["ticker_id"], :name => "index_technicals_on_ticker_id"
