@@ -53,6 +53,7 @@ module Google
         return nil
       end
 
+      # Date,Open,High,Low,Close,Volume
       ret = CSV.parse(page.body) # array of arrays
       return ret
     end

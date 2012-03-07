@@ -1,13 +1,15 @@
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
 
 one:
+  id: 1
   indicator_type: open
   date: 2012-01-01
   value: 51
-  ticker: 1
+  ticker_id: 1
 
 two:
+  id: 2
   indicator_type: close
   date: 2012-01-01
   value: 52
-  ticker: 1
+  ticker_id: 1

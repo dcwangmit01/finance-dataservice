@@ -1,5 +1,9 @@
 class Technical < ActiveRecord::Base
   
+  # Explicitly force the primary key, because the technicals table is
+  # hand-tweaked with a primary multi-key to support partitioning.
+  self.primary_key = :id
+
   validates :indicator_type,
   :presence => true,
   :length => {

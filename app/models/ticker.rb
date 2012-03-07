@@ -6,7 +6,7 @@ class Ticker < ActiveRecord::Base
   :presence => true,
   :uniqueness => true,
   :length => {
-    :minimum => 4,
+    :minimum => 1,
     :maximum => 32
   },
   :format => {
@@ -17,7 +17,7 @@ class Ticker < ActiveRecord::Base
   validates :security_type, 
   :presence => true,
   :length => {
-    :minimum => 4,
+    :minimum => 1,
     :maximum => 32
   },
   :format => {
@@ -30,5 +30,10 @@ class Ticker < ActiveRecord::Base
 
   has_many :technicals, :dependent => :destroy
   validates_associated :technicals
+
+  def Ticker.IsInDb(ticker)
+    l = Ticker.find_by_name(ticker)
+    return (l.length() > 0)
+  end
 
 end

@@ -1,16 +1,19 @@
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
 
 one:
-  name: akam
+  id: 1
+  name: AKAM
   security_type: stock
   underlying: 1
 
 two:
+  id: 2
   name: AKAM120317C00021000
   security_type: option
   underlying: 1
 
 three:
-  name: csco
+  id: 3
+  name: CSCO
   security_type: stock
-  underlying: 2
+  underlying: 3
