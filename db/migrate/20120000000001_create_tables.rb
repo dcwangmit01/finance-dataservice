@@ -1,5 +1,12 @@
-class CreateTechnicals < ActiveRecord::Migration
+class CreateTables < ActiveRecord::Migration
   def change
+    create_table :tickers do |t|
+      t.string :name
+      t.string :security_type
+      t.integer :underlying, :default => 0
+      t.timestamps
+    end
+
     create_table :technicals do |t|
       t.references :ticker
       t.string :indicator_type
@@ -18,5 +25,4 @@ class CreateTechnicals < ActiveRecord::Migration
       PARTITIONS 8;
     SQL
   end
-  
 end
