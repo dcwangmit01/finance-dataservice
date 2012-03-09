@@ -1,5 +1,5 @@
 Dataservice::Application.routes.draw do
-  resources :tickers do
+  resources :symbols do
     resources :technicals
   end
 

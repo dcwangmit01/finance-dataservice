@@ -1,0 +1,2 @@
+module SymbolsHelper
+end

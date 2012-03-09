@@ -1,0 +1,27 @@
+<h1>Listing symbols</h1>
+
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Security type</th>
+    <th>Underlying</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @symbols.each do |symbol| %>
+  <tr>
+    <td><%= symbol.name %></td>
+    <td><%= symbol.security_type %></td>
+    <td><%= symbol.underlying %></td>
+    <td><%= link_to 'Show', symbol %></td>
+    <td><%= link_to 'Edit', edit_symbol_path(symbol) %></td>
+    <td><%= link_to 'Destroy', symbol, confirm: 'Are you sure?', method: :delete %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New Symbol', new_symbol_path %>

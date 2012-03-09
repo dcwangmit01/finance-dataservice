@@ -1,20 +1,20 @@
 require 'test_helper'
 require 'ruby-debug'
 
-class TickerTest < ActiveSupport::TestCase
+class SymbolTest < ActiveSupport::TestCase
   self.use_transactional_fixtures = false
 
-  TICKERS = [:C, :V]
+  SYMBOLS = [:C, :V]
 
   setup do
   end
   
-  test "Ticker.new()" do
+  test "Symbol.new()" do
     ActiveRecord::Base.transaction do
-      TICKERS.each do |ticker|
-        logger.info(ticker)
-        t1 = Ticker.new()
-        t1.name = ticker
+      SYMBOLS.each do |symbol|
+        logger.info(symbol)
+        t1 = Symbol.new()
+        t1.name = symbol
         t1.security_type = :stock
         t1.save()
         t1.underlying = t1.id

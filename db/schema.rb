@@ -11,26 +11,44 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120220051548) do
+ActiveRecord::Schema.define(:version => 20120000000001) do
 
-  create_table "technicals", :id => false, :force => true do |t|
-    t.integer  "id",                            :null => false
-    t.integer  "ticker_id",      :default => 0, :null => false
-    t.string   "indicator_type"
-    t.integer  "value"
-    t.date     "date"
-    t.datetime "created_at",                    :null => false
-    t.datetime "updated_at",                    :null => false
+  create_table "options", :force => true do |t|
+    t.string   "name"
+    t.string   "underlying",                             :null => false
+    t.string   "otype",      :limit => 0,                :null => false
+    t.date     "exp",                                    :null => false
+    t.integer  "strike",                                 :null => false
+    t.integer  "price"
+    t.integer  "change"
+    t.integer  "bid"
+    t.integer  "ask"
+    t.integer  "volume",                  :default => 0, :null => false
+    t.integer  "open_int",                :default => 0, :null => false
+    t.integer  "split",                   :default => 0, :null => false
+    t.date     "date",                                   :null => false
+    t.datetime "created_at",                             :null => false
+    t.datetime "updated_at",                             :null => false
   end
 
-  add_index "technicals", ["ticker_id"], :name => "index_technicals_on_ticker_id"
+  create_table "stocks", :force => true do |t|
+    t.string   "name",                      :null => false
+    t.integer  "open",       :default => 0, :null => false
+    t.integer  "high",       :default => 0, :null => false
+    t.integer  "low",        :default => 0, :null => false
+    t.integer  "close",      :default => 0, :null => false
+    t.integer  "volume",     :default => 0, :null => false
+    t.integer  "split",      :default => 0, :null => false
+    t.date     "date",                      :null => false
+    t.datetime "created_at",                :null => false
+    t.datetime "updated_at",                :null => false
+  end
 
-  create_table "tickers", :force => true do |t|
+  create_table "symbols", :force => true do |t|
     t.string   "name"
-    t.string   "security_type"
-    t.integer  "underlying",    :default => 0
-    t.datetime "created_at",                   :null => false
-    t.datetime "updated_at",                   :null => false
+    t.string   "otype",      :limit => 0, :null => false
+    t.datetime "created_at",              :null => false
+    t.datetime "updated_at",              :null => false
   end
 
 end
