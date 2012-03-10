@@ -1,7 +1,4 @@
 Dataservice::Application.routes.draw do
-  resources :symbols do
-    resources :technicals
-  end
 
   # The priority is based upon order of creation:
   # first created -> highest priority.

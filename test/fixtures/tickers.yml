@@ -2,18 +2,12 @@
 
 one:
   id: 1
-  name: AKAM
-  security_type: stock
-  underlying: 1
+  name: C
+  ticker_type: stock
+  exchange: nyse
 
 two:
   id: 2
-  name: AKAM120317C00021000
-  security_type: option
-  underlying: 1
-
-three:
-  id: 3
-  name: CSCO
-  security_type: stock
-  underlying: 3
+  name: GOOG
+  ticker_type: stock
+  exchange: nasdaq

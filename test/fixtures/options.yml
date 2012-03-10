@@ -1,0 +1,31 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  name: MyString
+  underlying: MyString
+  option_type: MyString
+  exp: 2012-03-09
+  strike: 1
+  price: 1
+  change: 1
+  bid: 1
+  ask: 1
+  volume: 1
+  interest: 1
+  split: 1
+  date: 2012-03-09
+
+two:
+  name: MyString
+  underlying: MyString
+  option_type: MyString
+  exp: 2012-03-09
+  strike: 1
+  price: 1
+  change: 1
+  bid: 1
+  ask: 1
+  volume: 1
+  interest: 1
+  split: 1
+  date: 2012-03-09

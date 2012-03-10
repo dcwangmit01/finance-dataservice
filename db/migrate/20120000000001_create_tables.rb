@@ -1,11 +1,25 @@
 class CreateTables < ActiveRecord::Migration
   def change
-    create_table :symbols do |t|
+    create_table :tickers do |t|
       t.string :name
-      t.column  :otype, "ENUM('nasdaq', 'nyse', 'amex')", :null => true
-      t.column  :otype, "ENUM('stock', 'option')", :null => false
+      #t.column  :ticker_type, "ENUM('stock', 'option')", :null => false
+      #t.column  :exchange, "ENUM('nasdaq', 'nyse', 'amex')", :null => true
+      #t.column :ticker_type, :enum, :limit => [:stock, :option], :null => false
+      #t.column :exchange, :enum, :limit => [:nasdaq, :nyse, :amex], :null => true
+      t.string  :ticker_type,  :null => false
+      t.string  :exchange,     :null => true
       t.timestamps
     end
+    # Rails test framework does not launch execute statements
+    #
+    # execute <<-SQL
+    # ALTER TABLE tickers
+    #   CHANGE COLUMN ticker_type ticker_type ENUM('stock', 'option') NOT NULL;
+    # SQL
+    # execute <<-SQL
+    # ALTER TABLE tickers
+    #   CHANGE COLUMN exchange exchange  ENUM('nyse', 'nasdaq', 'amex') DEFAULT NULL;
+    # SQL
 
     create_table :stocks do |t|
       t.string  :name,       :null => false
@@ -22,7 +36,7 @@ class CreateTables < ActiveRecord::Migration
     create_table :options do |t|
       t.string  :name
       t.string  :underlying, :null => false
-      t.column  :otype, "ENUM('put', 'call')", :null => false
+      t.column  :option_type, "ENUM('put', 'call')", :null => false
       t.date    :exp,        :null => false
       t.integer :strike,     :null => false
       t.integer :price,      :null => true #, :default => :null
@@ -30,7 +44,7 @@ class CreateTables < ActiveRecord::Migration
       t.integer :bid,        :null => true #, :default => :null
       t.integer :ask,        :null => true #, :default => :null
       t.integer :volume,     :null => false, :default => 0
-      t.integer :open_int,   :null => false, :default => 0
+      t.integer :interest,   :null => false, :default => 0
       t.integer :split,      :null => false, :default => 0
       t.date    :date,       :null => false
       t.timestamps
@@ -41,24 +55,6 @@ class CreateTables < ActiveRecord::Migration
     change_column_default(:options, :change, nil)
     change_column_default(:options, :bid, nil)
     change_column_default(:options, :ask, nil)
-
-
-    # create_table :technicals do |t|
-    #   t.references :ticker
-    #   t.string :indicator_type
-    #   t.integer :value
-    #   t.date :date
-    #   t.timestamps
-    # end
-    # add_index :technicals, :ticker_id
-    # execute <<-SQL
-    # ALTER TABLE technicals
-    #   DROP PRIMARY KEY, ADD PRIMARY KEY(id,ticker_id);
-    # SQL
-    # execute <<-SQL
-    # ALTER TABLE technicals
-    #   PARTITION BY HASH(ticker_id)
-    #   PARTITIONS 8;
-    # SQL
   end
+
 end
