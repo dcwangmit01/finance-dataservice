@@ -1,21 +1,23 @@
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
 
 one:
-  name: MyString
-  open: 1
-  high: 1
-  low: 1
-  close: 1
-  volume: 1
+  id: 1
+  name: AKAM
+  open: 100
+  high: 200
+  low: 99
+  close: 150
+  volume: 10000
   split: 1
   date: 2012-03-09
 
 two:
-  name: MyString
-  open: 1
-  high: 1
-  low: 1
-  close: 1
-  volume: 1
-  split: 1
-  date: 2012-03-09
+  id: 2
+  name: AKAM
+  open: 101
+  high: 202
+  low: 98
+  close: 150
+  volume: 109000
+  split: 2
+  date: 2012-03-10

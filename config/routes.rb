@@ -1,5 +1,10 @@
 Dataservice::Application.routes.draw do
 
+  resources :tickers
+  resources :stocks
+  resources :options
+
+
   # The priority is based upon order of creation:
   # first created -> highest priority.
 

@@ -3,6 +3,11 @@ require 'dataservice/google'
 
 class GoogleTest < ActiveSupport::TestCase
 
+
+  test "Google.GetMarketTimes()" do
+    logger.info(Google::GoogleTicker::GetMarketTimes().to_yaml())
+  end
+
   test "doesTickerExist" do
     return
 
@@ -17,12 +22,40 @@ class GoogleTest < ActiveSupport::TestCase
 
   end
 
+  test "getHistoricalStockData" do
+    t = Google::GoogleTicker.new(:akam)
+    # 7 days ago
+    s = (Time.now() - 7*60*60*24).strftime("%Y%m%d")
+    # 1 day ago
+    e = (Time.now() - 1*60*60*24).strftime("%Y%m%d")
+    
+    logger.info("Finding stock data for #{s} #{e}")
+    sd = t.getHistoricalStockData(s, e)
+    assert(sd != nil)
+    
+    logger.info(sd.to_yaml())
+    
+    for d in sd
+      assert(d.has_key?(:date) && d[:date].length()==10)
+      assert(d.has_key?(:open))
+      assert(d.has_key?(:high))
+      assert(d.has_key?(:low))
+      assert(d.has_key?(:close))
+      assert(d.has_key?(:volume))
+    end
+
+  end
+
   test "getOptionDates getOptionData" do
     t = Google::GoogleTicker.new(:akam)
     dates = t.getOptionDates()
+    logger.info(dates.to_yaml())
+
     assert(dates.length()>0, "unable to find options")
     
-    data = t.getOptionData(dates[0]['y'], dates[0]['m'], dates[0]['d'])
+    data = t.getOptionData(dates[0])
+
+    logger.info(data.to_yaml())
 
     assert(data.has_key?('puts'))
     assert(data.has_key?('calls'))

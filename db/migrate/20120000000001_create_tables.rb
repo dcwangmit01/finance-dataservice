@@ -8,6 +8,7 @@ class CreateTables < ActiveRecord::Migration
       #t.column :exchange, :enum, :limit => [:nasdaq, :nyse, :amex], :null => true
       t.string  :ticker_type,  :null => false
       t.string  :exchange,     :null => true
+      t.string  :status,       :null => false, :default => "active"
       t.timestamps
     end
     # Rails test framework does not launch execute statements
