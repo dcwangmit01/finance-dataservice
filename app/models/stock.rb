@@ -1,6 +1,8 @@
 class Stock < ActiveRecord::Base
 
-  def Stock.GetLastDateUpdated(name)
+  EXPIRATION_DAYS = 7
+
+  def Stock.GetLastUpdateDate(name)
   end
       
   
@@ -22,7 +24,7 @@ class Stock < ActiveRecord::Base
     ret_db_expired = nil
     ret_in_google  = nil
     ret_status     = nil
-    
+
     # Check database history, by getting the last historical entry
     db = Stock.find(:last, :order => "date ASC", :conditions => { :name => name })
     
@@ -31,7 +33,7 @@ class Stock < ActiveRecord::Base
     
     if (ret_db_exist == true)
       # Are the records Expired?
-      ret_db_expired = ((db.date <=> Date.new().prev_day(Ticker.EXPIRATION_DAYS)) == -1) ? true : false
+      ret_db_expired = ((db.date <=> Date.new().prev_day(EXPIRATION_DAYS)) == -1) ? true : false
       
       if (ret_db_expired == false)
         ret_status = :active

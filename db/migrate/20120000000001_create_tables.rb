@@ -1,14 +1,14 @@
 class CreateTables < ActiveRecord::Migration
   def change
     create_table :tickers do |t|
-      t.string :name
-      #t.column  :ticker_type, "ENUM('stock', 'option')", :null => false
-      #t.column  :exchange, "ENUM('nasdaq', 'nyse', 'amex')", :null => true
-      #t.column :ticker_type, :enum, :limit => [:stock, :option], :null => false
-      #t.column :exchange, :enum, :limit => [:nasdaq, :nyse, :amex], :null => true
-      t.string  :ticker_type,  :null => false
-      t.string  :exchange,     :null => true
-      t.string  :status,       :null => false, :default => "active"
+      t.string    :name
+      #t.column   :ticker_type, "ENUM('stock', 'option')", :null => false
+      #t.column   :exchange, "ENUM('nasdaq', 'nyse', 'amex')", :null => true
+      #t.column   :ticker_type, :enum, :limit => [:stock, :option], :null => false
+      #t.column   :exchange, :enum, :limit => [:nasdaq, :nyse, :amex], :null => true
+      t.string    :ticker_type,  :null => false
+      t.string    :exchange,     :null => true
+      t.string    :status,       :null => false, :default => "active"
       t.timestamps
     end
     # Rails test framework does not launch execute statements

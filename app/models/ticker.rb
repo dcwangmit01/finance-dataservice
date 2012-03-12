@@ -1,45 +1,65 @@
 
+
+require 'dataservice/util'
 require 'dataservice/google'
-require 'test/unit'
 
 class Ticker < ActiveRecord::Base
-  EXPIRATION_DAYS = 7
-
-  
   
   def Ticker.UpdateAll()
-    times = GoogleTicker::GetMarketTimes()
-    
-    if times[:marketStatus] == MarketStatus::OPEN
-      logger.info("Market is currently open, Not pulling info")
+    times = Google::MarketTime.new()
+    times.update()
+    logger.info(times)
+    logger.info(times.to_yaml())
+    if (times.market_status != Google::MarketStatus::AFTER_CLOSE)
+      # TODO: It is possible to optimize data fetching of all
+      # *historical* data during all hours, but it's not worth the
+      # complexity right now.  Then you have to worry about the
+      # trading day immediatly before the last trading day, and I
+      # don't know how to calculate that.
+      logger.info("Skipping data update because market_status=[#{times.market_status}]")
       return
     end
 
-    stocks = Ticker.all(:conditions => { :ticker_type => 'stock' })
-    
-    stocks.each do |t|
-      # Get the latest Stock Object to see when it was last updated
-      s = Stock.find(:last, :order => "date ASC", :conditions => { :name => name })
+    tickers = Ticker.all(:order => "name ASC", :conditions => { :ticker_type => 'stock' })
+    tickers.each do |t|
+      # Update the time variables for each cycle, since each cycle
+      # could take various amounts of time to push us into a different
+      # market state.
+      times.update()
       
+      if (times.market_status != MarketStatus::AFTER_CLOSE)
+        logger.info("Stopping all data updates because of market status" +
+                    "name=[#{t.name}] " +
+                    "market_status=[#{times.market_status}]")
+        return
+      end
+      
+      # Get the latest historical record to see when it was last updated
+      s = Stock.find(:last, :order => "date ASC", :conditions => { :name => t.name })
+      if (s != nil) 
+        dbTime = Util::ETime::FromDate(s.date)
 
-      # Dates
-      #  Today
-      #  LastUpdateOfStock
-      #  LastMarketDay
-      
-      
+        # Check if the history is up to date
+        if (dbTime.dateEqual?(times.last_market_date))
+          logger.info("Ticker name=[#{t.name}] is already up to date: " + 
+                      "last_record=[#{dbTime.toDate()}] " + 
+                      "last_market_date=[#{times.last_market_date.toDate()}]")
+          next
+        else
+          logger.info("Ticker name=[#{t.name}] needs update between dates: " + 
+                      "last_record=[#{dbTime.toDate()}] " + 
+                      "last_market_date=[#{times.last_market_date.toDate()}]")
+          Stock.update(dbTime, times.last_market_date)
+        end
 
-      # after_market and not on the same day
-      # after_market and on the same day
-      # before_market and on the same day?
-      # during_market
-      
+      else
+        # Then there is not yet history for this stock
+        startdate = a year ago
+      end
+
+
     end    
 
-    logger.info(stocks.to_yaml())
-    # Update only stocks, and from stocks recursively update options
-
-    
   end
   
 
