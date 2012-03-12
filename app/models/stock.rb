@@ -2,10 +2,10 @@ class Stock < ActiveRecord::Base
 
   EXPIRATION_DAYS = 7
 
-  def Stock.GetLastUpdateDate(name)
+  def Stock.Update(name, startETime, stopETime)
+    logger.info("name=[#{name}]startETime=[#{startETime}] stopETime=[#{stopETime}]")
   end
-      
-  
+
   def Stock.CalculateStatusActiveDelistedUnknown(name)
     # A stock is
     #   'active' if:
@@ -51,14 +51,6 @@ class Stock < ActiveRecord::Base
     logger.debug("status[#{ret_status}]: db_exist[#{ret_db_exist}] "+
                  "db_expired[#{ret_db_expired}] in_google[#{ret_in_google}]")
     return ret_status
-  end
-
-  def Stock.EnsureExists(name)
-    
-  end
-
-  def Option.GetLastRecordDate(name)
-
   end
 
   def logger()

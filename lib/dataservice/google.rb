@@ -64,28 +64,34 @@ module Google
                MARKET_TIMES[:close][:min])
       end
       
-      now = Util::ETime.now()
+      # States versus Times
+      #   BEFORE_OPEN
+      #     self.last_market_open_time-GRACE_TIME_SECS_BEFORE_MARKET_OPEN
+      #   BEFORE_OPEN_DURING_GRACE_TIME
+      #     self.last_market_open_time
+      #   OPEN
+      #     self.last_market_close_time
+      #   AFTER_CLOSE_DURING_GRACE_TIME
+      #     self.last_market_close_time+GRACE_TIME_SECS_AFTER_MARKET_CLOSE
+      #   AFTER_CLOSE
       status = nil
-      if false # Order of the following matters
-        # Even the text alignnment
-      elsif now.before?(self.last_market_open_time-GRACE_TIME_SECS_BEFORE_MARKET_OPEN)
-        status = MarketStatus::BEFORE_OPEN_DURING_GRACE_TIME
-      elsif now.before?(self.last_market_open_time)
+      now = Util::ETime.now()
+      openGrace  = self.last_market_open_time.cloneDiffSeconds(-GRACE_TIME_SECS_BEFORE_MARKET_OPEN)
+      closeGrace = self.last_market_close_time.cloneDiffSeconds(GRACE_TIME_SECS_AFTER_MARKET_CLOSE)
+      if now.before?(openGrace)
         status = MarketStatus::BEFORE_OPEN
-      elsif now.after?(self.last_market_close_time+GRACE_TIME_SECS_AFTER_MARKET_CLOSE)
+      elsif now.between?(openGrace, self.last_market_open_time)
+        status = MarketStatus::BEFORE_OPEN_DURING_GRACE_TIME
+      elsif now.between?(self.last_market_open_time, self.last_market_close_time)
+        status = MarketStatus::OPEN
+      elsif now.between?(self.last_market_close_time, closeGrace)
         status = MarketStatus::AFTER_CLOSE_DURING_GRACE_TIME
-      elsif now.after?(self.last_market_close_time)
+      elsif now.after?(closeGrace)
         status = MarketStatus::AFTER_CLOSE
       else
-        status = MarketStatus::OPEN
+        logger.fatal("Code Error")
+        exit(-1)
       end
-
-
-      if now.before?(self.last_market_open_time.cloneDiffSeconds(-GRACE_TIME_SECS_BEFORE_MARKET_OPEN))
-        status = MarketStatus::BEFORE_OPEN
-      elsif
-      
-
       
       self.updated_time = now
       self.market_status = status

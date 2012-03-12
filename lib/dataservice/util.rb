@@ -28,7 +28,7 @@ module Util
     end
 
     def between?(t1, t2)
-      return (self.after(t1) && self.before(t2))
+      return (self.after?(t1) && self.before?(t2))
     end
 
     
