@@ -7,8 +7,8 @@ class CreateTables < ActiveRecord::Migration
       #t.column   :ticker_type, :enum, :limit => [:stock, :option], :null => false
       #t.column   :exchange, :enum, :limit => [:nasdaq, :nyse, :amex], :null => true
       t.string    :ticker_type,  :null => false
-      t.string    :exchange,     :null => true
       t.string    :status,       :null => false, :default => "active"
+      t.timestamp :fetched_at,   :null => true
       t.timestamps
     end
     # Rails test framework does not launch execute statements
@@ -22,6 +22,12 @@ class CreateTables < ActiveRecord::Migration
     #   CHANGE COLUMN exchange exchange  ENUM('nyse', 'nasdaq', 'amex') DEFAULT NULL;
     # SQL
 
+    create_table :caches do |t|
+      t.string :key
+      t.string :value
+      t.timestamps
+    end
+
     create_table :stocks do |t|
       t.string  :name,       :null => false
       t.integer :open,       :null => false, :default => 0
@@ -30,6 +36,7 @@ class CreateTables < ActiveRecord::Migration
       t.integer :close,      :null => false, :default => 0
       t.integer :volume,     :null => false, :default => 0
       t.integer :split,      :null => false, :default => 0
+      t.integer :dividend,   :null => false, :default => 0
       t.date    :date,       :null => false
       t.timestamps
     end
@@ -46,7 +53,6 @@ class CreateTables < ActiveRecord::Migration
       t.integer :ask,        :null => true #, :default => :null
       t.integer :volume,     :null => false, :default => 0
       t.integer :interest,   :null => false, :default => 0
-      t.integer :split,      :null => false, :default => 0
       t.date    :date,       :null => false
       t.timestamps
     end

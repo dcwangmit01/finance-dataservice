@@ -5,7 +5,7 @@ class GoogleTest < ActiveSupport::TestCase
 
 
   test "Google.GetMarketTimes()" do
-    logger.info(Google::GoogleTicker::GetMarketTimes().to_yaml())
+    logger.info(Google::MarketTime.new().to_yaml())
   end
 
   test "doesTickerExist" do

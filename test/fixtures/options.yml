@@ -12,7 +12,6 @@ one:
   ask: 1
   volume: 1
   interest: 1
-  split: 1
   date: 2012-03-09
 
 two:
@@ -27,6 +26,5 @@ two:
   ask: 1
   volume: 1
   interest: 1
-  split: 0
   date: 2012-03-10
 

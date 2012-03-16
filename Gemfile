@@ -43,6 +43,7 @@ gem "friendly_id", "~> 4.0"
 gem "log4r"
 gem "mechanize"
 gem "json"
+gem "solid_assert"
 
 # source 'https://gems.gemfury.com/8n1rdTK8pezvcsyVmmgJ/' 
 gem 'linecache19',       '>= 0.5.13'

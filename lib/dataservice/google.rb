@@ -18,12 +18,15 @@ module Google
 
   class MarketTime
     # Constants
-    MARKET_TIMES = {
-      :open  => { :hour => 06, :min => 30 },
-      :close => { :hour => 13, :min => 00 } }
 
-    # Grace time before and after market hours where we do not want to
-    # fetch data, allowing for data providers to settle
+    # Grace time means: before and after market hours where we do not
+    # want to fetch data, allowing for data providers to settle
+    MARKET_TIMES = {
+      :open_grace  => { :hour => 05, :min => 30 },
+      :open        => { :hour => 06, :min => 30 },
+      :close       => { :hour => 13, :min => 00 },
+      :close_grace => { :hour => 14, :min => 00 } }
+
     GRACE_TIME_SECS_BEFORE_MARKET_OPEN = 60*60
     GRACE_TIME_SECS_AFTER_MARKET_CLOSE = 60*60
 
@@ -147,19 +150,10 @@ module Google
         return nil
       end
 
-      # 10-Mar-11,36.12,36.75,35.52,36.41,4697535
-      # 1-Apr-11,38.15,38.45,37.39,37.60,3492166
-      # 2-May-11,34.41,34.75,34.06,34.23,6247551
-      # 1-Jun-11,33.90,34.41,33.19,33.19,5231851
-      # 1-Jul-11,31.49,31.49,31.49,31.49,0
-      # 1-Aug-11,24.53,24.79,23.53,23.76,6650898
-      # 1-Sep-11,22.03,22.28,21.41,21.46,2999834
-      # 3-Oct-11,19.73,19.93,18.59,18.65,5102852
-      # 1-Nov-11,25.91,27.00,25.73,26.64,5835498
-      # 1-Dec-11,28.82,29.50,28.62,29.16,3638788
-      # 3-Jan-12,32.97,33.20,32.77,32.93,4668332
-      # 1-Feb-12,32.19,32.50,31.45,32.01,4530573
-      # 1-Mar-12,36.20,36.26,35.87,35.90,4596809
+      # Dates Look Like:
+      #   1-Mar-11 1-Apr-11 2-May-11 1-Jun-11 1-Jul-11 1-Aug-11
+      #   1-Sep-11 3-Oct-11 1-Nov-11 1-Dec-11 3-Jan-12 1-Feb-12
+      #   1-Mar-12
 
       ret = []
       first = true
@@ -248,6 +242,15 @@ module Google
       # last market open date.  It looks like: "Mar 9 - Close" on
       # March 11th which is a Sunday.
       dateStatus = page.body.scan(/<span class=nwp>\s*?(\w+) (\d+) - (\w+)\s*?<\/span>/).pop()
+
+      # <span class=nwp>
+      # Real-time:
+      # &nbsp;
+      # <span id="ref_662713_ltt">
+      # 11:16AM EDT
+      # </span>
+      # </span>
+
       mon = dateStatus[0]
       day = dateStatus[1]
       # Unused: dateStatus[3] which might be 'Open' or 'Close'

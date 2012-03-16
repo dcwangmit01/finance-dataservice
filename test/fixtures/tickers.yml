@@ -4,16 +4,13 @@ one:
   id: 1
   name: AKAM
   ticker_type: stock
-  exchange: nasdaq
 
 two:
   id: 2
   name: AKAM120317C00021000
   ticker_type: option
-  exchange: nasdaq
 
 three:
   id: 3
   name: C
   ticker_type: stock
-  exchange: nyse
