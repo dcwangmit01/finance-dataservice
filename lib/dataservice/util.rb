@@ -32,7 +32,10 @@ module Util
     def ETime.FromDateStr(s)
       assert(s.kind_of?(String))
       d = Date.parse(s)
-      return Util::ETime.new(d.year, d.mon, d.day)
+      assert(d.kind_of?(Date))
+      r = Util::ETime.new(d.year, d.mon, d.day)
+      assert(r.kind_of?(ETime))
+      return r
     end
 
     def toDateStr()

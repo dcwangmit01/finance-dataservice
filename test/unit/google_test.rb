@@ -3,8 +3,13 @@ require 'dataservice/google'
 
 class GoogleTest < ActiveSupport::TestCase
 
+  test "MarketDate.GetLastMarketDate" do
+    time = Google::MarketDate::GetLastMarketDate()
+    logger.info(time.to_yaml())
+    logger.info(time)
+  end
+
   test "doesTickerExist" do
-    return
 
     # assert that a ticker does not exist
     t = Google::GoogleTicker.new(:azam)
@@ -18,11 +23,12 @@ class GoogleTest < ActiveSupport::TestCase
   end
 
   test "getHistoricalStockData" do
+
     t = Google::GoogleTicker.new(:akam)
-    # 7 days ago
-    s = (Time.now() - 7*60*60*24).strftime("%Y%m%d")
+    # 8 days ago
+    s = Util::ETime.now().cloneDiffSeconds(-8*60*60*24).toDateStr()
     # 1 day ago
-    e = (Time.now() - 1*60*60*24).strftime("%Y%m%d")
+    e = Util::ETime.now().cloneDiffSeconds(-1*60*60*24).toDateStr()
     
     logger.info("Finding stock data for #{s} #{e}")
     sd = t.getHistoricalStockData(s, e)
@@ -42,6 +48,7 @@ class GoogleTest < ActiveSupport::TestCase
   end
 
   test "getOptionDates getOptionData" do
+    
     t = Google::GoogleTicker.new(:akam)
     dates = t.getOptionDates()
     logger.info(dates.to_yaml())

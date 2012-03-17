@@ -72,19 +72,23 @@ module Google
         begin
           # Fetch the latest historical data from a common ticker, to
           # get the last date
-          t = Google::GoogleTicker.new('.DJI')
+          t = Google::GoogleTicker.new('C')
           # 8 days ago
           s = Util::ETime.now().cloneDiffSeconds(-8*60*60*24).toDateStr()
           # 1 day ago
           e = Util::ETime.now().cloneDiffSeconds(-1*60*60*24).toDateStr()
-          sd = self.getHistoricalStockData(s, e)
+          sd = t.getHistoricalStockData(s, e)
+          logger.info(sd.to_yaml())
           assert(sd != nil)
           assert(sd.length()>0)
           
           date = sd[-1][:date]
           assert(date.length()>0)
+          logger.info(date)
           newLmd = Util::ETime::FromDateStr(date)
-          assert(newLmd.kind_of?(ETime))
+          logger.info(newLmd)
+          logger.info(newLmd.class)
+          assert(newLmd.kind_of?(Util::ETime))
         end
 
         # Set the fields in the database
@@ -93,11 +97,11 @@ module Google
           Cache::Set(UPDATED, now.to8601Str())
           logger.info("Updating LastMarketDate " +
                       "prevLmd=[#{prevLmd.to8601Str()}] " +
-                      "newLmd=[#{lmd.to8601Str()}]" +
+                      "newLmd=[#{newLmd.to8601Str()}]" +
                       "updated=[#{now.to8601Str()}]")
         end
         
-        return lmd
+        return newLmd
       end
     end
 
@@ -281,7 +285,7 @@ module Google
                    :volume => Integer(r[5]) })
       end
 
-      return ret
+      return ret.reverse()
     end
     
     # Returns list of all current active option dates
