@@ -4,26 +4,15 @@ require 'dataservice/util'
 require 'dataservice/google'
 
 class Ticker < ActiveRecord::Base
+
   
   def Ticker.UpdateAll()
+
     marketTimes = Google::MarketTime.new()
     marketTimes.update()
     logger.info(marketTimes.to_yaml())
-    Ticker::UpdateAllStocks(marketTimes)
-    Ticker::UpdateAllOptions(marketTimes)
-  end
 
-  def Ticker.UpdateAllStocks(times)
-    
-    if (times.market_status != Google::MarketStatus::AFTER_CLOSE)
-      # TODO: It is possible to optimize data fetching of all
-      # *historical* data during all hours, but it's not worth the
-      # complexity right now.  You can find the trading day
-      # immediately before the last trading day by querying any stock
-      # for historical data.
-      logger.info("Skipping data update because market_status=[#{times.market_status}]")
-      return
-    end
+
 
     Ticker.all(:order => "name ASC", 
                :conditions => {
@@ -75,27 +64,6 @@ class Ticker < ActiveRecord::Base
 
     end    
   end
-
-
-  def Ticker.UpdateAllOptions(name)
-    
-  end
-  
-  
-  def Ticker.EnsureExists(name)
-    
-  end
-
-
-  def updateStock()
-    logger.info("Updating stock " + self.name)
-    
-  end
-  
-  def updateOption()
-    logger.info("Updating option " + self.name)
-  end
-
 
 
   def Exists(name)

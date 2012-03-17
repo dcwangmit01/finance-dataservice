@@ -3,11 +3,6 @@ require 'dataservice/google'
 
 class GoogleTest < ActiveSupport::TestCase
 
-
-  test "Google.GetMarketTimes()" do
-    logger.info(Google::MarketTime.new().to_yaml())
-  end
-
   test "doesTickerExist" do
     return
 

@@ -8,96 +8,205 @@ require 'json'
 
 module Google
 
-  class MarketStatus # enum
-    OPEN = :OPEN
-    BEFORE_OPEN = :BEFORE_OPEN
-    BEFORE_OPEN_DURING_GRACE_TIME = :BEFORE_OPEN_DURING_GRACE_TIME
-    AFTER_CLOSE = :AFTER_CLOSE
-    AFTER_CLOSE_DURING_GRACE_TIME = :AFTER_CLOSE_DURING_GRACE_TIME
+  class MarketDate
+    DATE    = 'MarketData.LastMarketDateTime.value'
+    UPDATED = 'MarketData.LastMarketDateTime.updatedat'
+
+    def MarketDate.GetLastMarketDate()
+      
+      begin # Prime a non-existent cache
+        if (!Cache::Exists(DATE))
+          logger.info("Priming LastMarketDate: key=[#{DATE}] does not exist")
+          Cache.Create(DATE, Util::ETime::at(0).to8601Str())
+        end
+        if (!Cache::Exists(UPDATED))
+          logger.info("Priming LastMarketDate: key=[#{UPDATED}] does not exist")
+          Cache.Create(UPDATED, Util::ETime::at(0).to8601Str())
+        end
+      end
+
+      # Create some variables used by the calculations
+      now = Util::ETime.new()
+      up = Util::ETime::From8601Str(Cache::Get(UPDATED).value)
+      
+      # figure out if and why we need to update the historical data,
+      # and set variables msg and dirty
+      msg = ""
+      dirty = false
+      begin 
+        if (now.weekend?())
+          if (!up.dateEqual?(now))
+            msg = ("Updating LastMarketDate: " +
+                   "weekend " +
+                   "up=[#{up.to8601Str()}] ne now=[#{now.to8601Str()}]")
+            dirty = true
+          end
+        elsif (now.weekday?())
+          if (# if has not checked today
+              !up.dateEqual?(now) &&
+              # && the time is before market close grace time
+              MarketTime::BeforeClose?(now) && !MarketTime::CloseGrace?(now))
+            msg = ("Updating LastMarketDate: " +
+                   "weekday before market close " +
+                   "up=[#{up.to8601Str()}] now=[#{now.to8601Str()}]")
+            dirty = true
+          elsif (# if the time is now after market close grace time
+                 MarketTime::AfterClose?(now) && !MarketTime::CloseGrace?(now) &&
+                 # && the last time we checked is before market close
+                 MarketTime::BeforeClose?(up))
+            msg = ("Updating LastMarketDate: " +
+                   "weekday after market close " +
+                   "up=[#{up.to8601Str()}] now=[#{now.to8601Str()}]")
+            dirty = true
+          end
+        end
+      end
+
+      prevLmd = Util::ETime::From8601Str(Cache::Get(DATE).value)
+      if (!dirty)
+        # If there is no updated needed, then return the previous
+        # lastModifiedDate
+        return prevLmd
+      else
+        newLmd = nil
+        begin
+          # Fetch the latest historical data from a common ticker, to
+          # get the last date
+          t = Google::GoogleTicker.new('.DJI')
+          # 8 days ago
+          s = Util::ETime.now().cloneDiffSeconds(-8*60*60*24).toDateStr()
+          # 1 day ago
+          e = Util::ETime.now().cloneDiffSeconds(-1*60*60*24).toDateStr()
+          sd = self.getHistoricalStockData(s, e)
+          assert(sd != nil)
+          assert(sd.length()>0)
+          
+          date = sd[-1][:date]
+          assert(date.length()>0)
+          newLmd = Util::ETime::FromDateStr(date)
+          assert(newLmd.kind_of?(ETime))
+        end
+
+        # Set the fields in the database
+        ActiveRecord::Base.transaction do
+          Cache::Set(DATE,    newLmd.to8601Str())
+          Cache::Set(UPDATED, now.to8601Str())
+          logger.info("Updating LastMarketDate " +
+                      "prevLmd=[#{prevLmd.to8601Str()}] " +
+                      "newLmd=[#{lmd.to8601Str()}]" +
+                      "updated=[#{now.to8601Str()}]")
+        end
+        
+        return lmd
+      end
+    end
+
+    def MarketDate.logger()
+      return Rails.logger
+    end
+    
   end
 
+ 
   class MarketTime
-    # Constants
-
+    
     # Grace time means: before and after market hours where we do not
     # want to fetch data, allowing for data providers to settle
-    MARKET_TIMES = {
-      :open_grace  => { :hour => 05, :min => 30 },
-      :open        => { :hour => 06, :min => 30 },
-      :close       => { :hour => 13, :min => 00 },
-      :close_grace => { :hour => 14, :min => 00 } }
+    TIMES = {
+      # gb = gracetime before
+      # ga = gracetime after
+      :open_gb  => { :hour => 06, :min => 00 },
+      :open     => { :hour => 06, :min => 30 },
+      :open_ga  => { :hour => 07, :min => 00 },
+      :close_gb => { :hour => 12, :min => 30 },
+      :close    => { :hour => 13, :min => 00 },
+      :close_ga => { :hour => 13, :min => 30 } }
 
-    GRACE_TIME_SECS_BEFORE_MARKET_OPEN = 60*60
-    GRACE_TIME_SECS_AFTER_MARKET_CLOSE = 60*60
-
-    # Accessors
-    attr_accessor :updated_time
-    attr_accessor :last_market_date
-    attr_accessor :last_market_open_time
-    attr_accessor :last_market_close_time
-    attr_accessor :market_status
-
-    def new()
-      print(:asdfasdfjksdf)
-      logger.debug("in new method")
-      self.updateForce()
+    # Helpers
+    def MarketTime.BeforeHourMin?(time, hour, min)
+      assert(time.kind_of?(ETime))
+      assert(hour.kind_of?(Integer))
+      assert(min.kind_of?(Integer))
+      return true if time.hour < hour
+      return true if time.min  < min
+      return false
     end
 
-    def updateForce()
-      self.last_market_date = nil
-      self.update()
+    def MarketTime.AfterHourMin?(time, hour, min)
+      assert(time.kind_of?(ETime))
+      assert(hour.kind_of?(Integer))
+      assert(min.kind_of?(Integer))
+      return true if time.hour > hour
+      return true if time.min  > min
+      return false
     end
 
-    def update()
-      # We cache this value so we don't hit the servers every single time
-      if (self.last_market_date == nil)
-        # Hit the Google server to fetch the last market date
-        self.last_market_date = GoogleTicker::FetchLastMarketDate()
-        self.last_market_open_time = Util::ETime
-          .new(self.last_market_date.year,
-               self.last_market_date.mon,
-               self.last_market_date.day,
-               MARKET_TIMES[:open][:hour],
-               MARKET_TIMES[:open][:min])
-        self.last_market_close_time = Util::ETime
-          .new(self.last_market_date.year,
-               self.last_market_date.mon,
-               self.last_market_date.day,
-               MARKET_TIMES[:close][:hour],
-               MARKET_TIMES[:close][:min])
-      end
-      
-      # States versus Times
-      #   BEFORE_OPEN
-      #     self.last_market_open_time-GRACE_TIME_SECS_BEFORE_MARKET_OPEN
-      #   BEFORE_OPEN_DURING_GRACE_TIME
-      #     self.last_market_open_time
-      #   OPEN
-      #     self.last_market_close_time
-      #   AFTER_CLOSE_DURING_GRACE_TIME
-      #     self.last_market_close_time+GRACE_TIME_SECS_AFTER_MARKET_CLOSE
-      #   AFTER_CLOSE
-      status = nil
-      now = Util::ETime.now()
-      openGrace  = self.last_market_open_time.cloneDiffSeconds(-GRACE_TIME_SECS_BEFORE_MARKET_OPEN)
-      closeGrace = self.last_market_close_time.cloneDiffSeconds(GRACE_TIME_SECS_AFTER_MARKET_CLOSE)
-      if now.before?(openGrace)
-        status = MarketStatus::BEFORE_OPEN
-      elsif now.between?(openGrace, self.last_market_open_time)
-        status = MarketStatus::BEFORE_OPEN_DURING_GRACE_TIME
-      elsif now.between?(self.last_market_open_time, self.last_market_close_time)
-        status = MarketStatus::OPEN
-      elsif now.between?(self.last_market_close_time, closeGrace)
-        status = MarketStatus::AFTER_CLOSE_DURING_GRACE_TIME
-      elsif now.after?(closeGrace)
-        status = MarketStatus::AFTER_CLOSE
-      else
-        logger.fatal("Code Error")
-        exit(-1)
-      end
-      
-      self.updated_time = now
-      self.market_status = status
+    # MarketTime Queries
+    def MarketTime.BetweenHourMin?(time, hour1, min1, hour2, min2)
+      assert(time.kind_of?(ETime))
+      assert(hour1.kind_of?(Integer))
+      assert(min1.kind_of?(Integer))
+      assert(hour2.kind_of?(Integer))
+      assert(min2.kind_of?(Integer))
+      return (MarketTime::AfterHourMin(time, hour1, min1) &&
+              MarketTime::BeforeHourMin(time, hour2, min2))
+    end
+    
+    def MarketTime.BeforeOpen?(time)
+      assert(time.kind_of?(Util::ETime))
+      return time.timeBeforeHourMin?(time,
+                                     MarketTime::TIMES[:open][:hour],
+                                     MarketTime::TIMES[:open][:min])
+    end
+
+    def MarketTime.AfterOpen?(time)
+      assert(time.kind_of?(Util::ETime))
+      return (!MarketTime::BeforeOpen())
+    end
+
+    def MarketTime.BeforeClose?(time)
+      assert(time.kind_of?(Util::ETime))
+      return time.timeBeforeHourMin?(time,
+                                     MarketTime::TIMES[:close][:hour],
+                                     MarketTime::TIMES[:close][:min])
+    end
+
+    def MarketTime.AfterClose?(time)
+      assert(time.kind_of?(Util::ETime))
+      return (!MarketTime::BeforeClose())
+    end
+
+    def MarketTime.Open?(time)
+      assert(time.kind_of?(Util::ETime))
+      return (!MarketTime::Close?(time))
+    end
+
+    def MarketTime.Close?(time)
+      assert(time.kind_of?(Util::ETime))
+      return (MarketTime::BeforeOpen?(time) || MarketTime::AfterClose?(time))
+    end
+    
+    def MarketTime.OpenGrace?(time)
+      assert(time.kind_of?(Util::ETime))
+      return (time.timeBetweenHourMin?(time,
+                                       MarketTime::TIMES[:open_gb][:hour],
+                                       MarketTime::TIMES[:open_gb][:min],
+                                       MarketTime::TIMES[:open_ga][:hour],
+                                       MarketTime::TIMES[:open_ga][:min]))
+    end
+    
+    def MarketTime.CloseGrace?(time)
+      assert(time.kind_of?(Util::ETime))
+      return (time.timeBetweenHourMin?(time,
+                                       MarketTime::TIMES[:close_gb][:hour],
+                                       MarketTime::TIMES[:close_gb][:min],
+                                       MarketTime::TIMES[:close_ga][:hour],
+                                       MarketTime::TIMES[:close_ga][:min]))
+    end
+
+    def MarketTime.Grace?(time)
+      assert(time.kind_of?(Util::ETime))
+      return (MarketTime::OpenGrace?(time) || MarketTime::CloseGrace?(time))
     end
     
   end
@@ -126,11 +235,10 @@ module Google
     end
     
     def doesTickerExist()
-      # 7 days ago
-      s = Util::ETime.now().cloneDiffSeconds(-7*60*60*24).to_strYYYYMMDD()
+      # 8 days ago
+      s = Util::ETime.now().cloneDiffSeconds(-8*60*60*24).toDateStr()
       # 1 day ago
-      e = Util::ETime.now().cloneDiffSeconds(-1*60*60*24).to_strYYYYMMDD()
-      
+      e = Util::ETime.now().cloneDiffSeconds(-1*60*60*24).toDateStr()
       return (self.getHistoricalStockData(s, e) != nil)
     end
     
@@ -223,51 +331,6 @@ module Google
       return ret
     end
 
-    def GoogleTicker.FetchLastMarketDate()
-      ticker = '.DJI'
-      params = {
-        :q      => ticker,
-      }
-      
-      # Fetch the page
-      page = nil
-      begin
-        page = @@agent.get(STOCK_URI, params)
-      rescue => e
-        logger.error("Unable to find times for #{@ticker}")
-        return nil
-      end
-      
-      # The following date status is always show to be the current or
-      # last market open date.  It looks like: "Mar 9 - Close" on
-      # March 11th which is a Sunday.
-      dateStatus = page.body.scan(/<span class=nwp>\s*?(\w+) (\d+) - (\w+)\s*?<\/span>/).pop()
-
-      # <span class=nwp>
-      # Real-time:
-      # &nbsp;
-      # <span id="ref_662713_ltt">
-      # 11:16AM EDT
-      # </span>
-      # </span>
-
-      mon = dateStatus[0]
-      day = dateStatus[1]
-      # Unused: dateStatus[3] which might be 'Open' or 'Close'
-      
-      # The date string that we parse does not come with a year.
-      # Figure out the right year while accounting for yearly
-      # boundaries. Take care of case where last market date was:
-      # 12/31/2011 but current date is 01/01/2012
-      now = Util::ETime.new()
-      marketDate = Util::ETime.FromDate(Date.parse("#{day}-#{mon}-#{now.year}"))
-      if (now.dateBefore?(marketDate))
-        marketDate = Util::ETime.FromDate(Date.parse("#{day}-#{mon}-#{now.year-1}"))
-      end
-
-      return marketDate
-    end
-    
     def logger()
       return Rails.logger
     end
