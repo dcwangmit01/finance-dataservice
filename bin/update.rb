@@ -58,13 +58,20 @@ module Dataservice
 
       # Update the Stock Data
       SNP500.each do |ticker|
+        logger.info(ticker.class)
+
         ActiveRecord::Base.transaction do
           Stock::Update(ticker)
         end
+
+        expirations = Option::GetExpirations(ticker)
+        logger.info(expirations.to_yaml())
+        Option::Update(ticker)
+        
       end
 
       # Update the Stock's Option Data
-      
+
 
     end
     

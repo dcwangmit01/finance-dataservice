@@ -9,8 +9,8 @@ require 'json'
 module Google
 
   class MarketDate
-    DATE    = 'MarketData.LastMarketDateTime.value'
-    UPDATED = 'MarketData.LastMarketDateTime.updatedat'
+    DATE    = 'Cache.MarketData.LastMarketDateTime.value'
+    UPDATED = 'Cache.MarketData.LastMarketDateTime.updated'
 
     def MarketDate.GetLastMarketDate()
       
@@ -83,7 +83,7 @@ module Google
           newLmd = sd.pop()[:date] # get last date
           assert(newLmd.kind_of?(Util::ETime))
         end
-
+        
         # Set the fields in the database
         ActiveRecord::Base.transaction do
           AppSetting::Set(DATE,    newLmd.to8601Str())
@@ -104,110 +104,6 @@ module Google
     
   end
 
- 
-  class MarketTime
-    
-    # Grace time means: before and after market hours where we do not
-    # want to fetch data, allowing for data providers to settle
-    TIMES = {
-      # gb = gracetime before
-      # ga = gracetime after
-      :open_gb  => { :hour => 06, :min => 00 },
-      :open     => { :hour => 06, :min => 30 },
-      :open_ga  => { :hour => 07, :min => 00 },
-      :close_gb => { :hour => 12, :min => 30 },
-      :close    => { :hour => 13, :min => 00 },
-      :close_ga => { :hour => 13, :min => 30 } }
-
-    # Helpers
-    def MarketTime.BeforeHourMin?(time, hour, min)
-      assert(time.kind_of?(ETime))
-      assert(hour.kind_of?(Integer))
-      assert(min.kind_of?(Integer))
-      return true if time.hour < hour
-      return true if time.min  < min
-      return false
-    end
-
-    def MarketTime.AfterHourMin?(time, hour, min)
-      assert(time.kind_of?(ETime))
-      assert(hour.kind_of?(Integer))
-      assert(min.kind_of?(Integer))
-      return true if time.hour > hour
-      return true if time.min  > min
-      return false
-    end
-
-    # MarketTime Queries
-    def MarketTime.BetweenHourMin?(time, hour1, min1, hour2, min2)
-      assert(time.kind_of?(ETime))
-      assert(hour1.kind_of?(Integer))
-      assert(min1.kind_of?(Integer))
-      assert(hour2.kind_of?(Integer))
-      assert(min2.kind_of?(Integer))
-      return (MarketTime::AfterHourMin(time, hour1, min1) &&
-              MarketTime::BeforeHourMin(time, hour2, min2))
-    end
-    
-    def MarketTime.BeforeOpen?(time)
-      assert(time.kind_of?(Util::ETime))
-      return time.timeBeforeHourMin?(time,
-                                     MarketTime::TIMES[:open][:hour],
-                                     MarketTime::TIMES[:open][:min])
-    end
-
-    def MarketTime.AfterOpen?(time)
-      assert(time.kind_of?(Util::ETime))
-      return (!MarketTime::BeforeOpen())
-    end
-
-    def MarketTime.BeforeClose?(time)
-      assert(time.kind_of?(Util::ETime))
-      return time.timeBeforeHourMin?(time,
-                                     MarketTime::TIMES[:close][:hour],
-                                     MarketTime::TIMES[:close][:min])
-    end
-
-    def MarketTime.AfterClose?(time)
-      assert(time.kind_of?(Util::ETime))
-      return (!MarketTime::BeforeClose())
-    end
-
-    def MarketTime.Open?(time)
-      assert(time.kind_of?(Util::ETime))
-      return (!MarketTime::Close?(time))
-    end
-
-    def MarketTime.Close?(time)
-      assert(time.kind_of?(Util::ETime))
-      return (MarketTime::BeforeOpen?(time) || MarketTime::AfterClose?(time))
-    end
-    
-    def MarketTime.OpenGrace?(time)
-      assert(time.kind_of?(Util::ETime))
-      return (time.timeBetweenHourMin?(time,
-                                       MarketTime::TIMES[:open_gb][:hour],
-                                       MarketTime::TIMES[:open_gb][:min],
-                                       MarketTime::TIMES[:open_ga][:hour],
-                                       MarketTime::TIMES[:open_ga][:min]))
-    end
-    
-    def MarketTime.CloseGrace?(time)
-      assert(time.kind_of?(Util::ETime))
-      return (time.timeBetweenHourMin?(time,
-                                       MarketTime::TIMES[:close_gb][:hour],
-                                       MarketTime::TIMES[:close_gb][:min],
-                                       MarketTime::TIMES[:close_ga][:hour],
-                                       MarketTime::TIMES[:close_ga][:min]))
-    end
-
-    def MarketTime.Grace?(time)
-      assert(time.kind_of?(Util::ETime))
-      return (MarketTime::OpenGrace?(time) || MarketTime::CloseGrace?(time))
-    end
-    
-  end
-
 
   class GoogleTicker
 
@@ -224,7 +120,7 @@ module Google
     #   q=akam&expd=17&expm=3&expy=2012&output=json
     CURRENT_OPTION_DATA_URI = URI('http://www.google.com/finance/option_chain')
     
-    @@agent = Mechanize.new()
+    @@agent = Util::EMechanize.new()
     @@agent.user_agent_alias = 'Mac Safari'
 
     def initialize(ticker)
@@ -249,8 +145,8 @@ module Google
       
       params = {
         :q         => @ticker,
-        :startdate => startdate.to8601Str(),
-        :enddate   => enddate.to8601Str(),
+        :startdate => startdate.toDateStr(),
+        :enddate   => enddate.toDateStr(),
         :output    => :csv
       }
 
@@ -266,6 +162,7 @@ module Google
       #   1-Sep-11 3-Oct-11 1-Nov-11 1-Dec-11 3-Jan-12 1-Feb-12
       #   1-Mar-12
 
+      logger.info(page.to_yaml())
       ret = []
       first = true
       CSV.parse(page.body) do |r|
@@ -353,7 +250,7 @@ module Google
         #   oi: '      0'            # :interest
         #   vol: ! '-'               # :volume
         #   strike: '20.00'          # :strike
-        #   expiry: Mar 17, 2012     # :expire
+        #   expiry: Mar 17, 2012     # :expiration
 
         for type in ['puts', 'calls']
           for o in json[type]
@@ -379,12 +276,12 @@ module Google
               assert(option_type.match(/(put|call)/))
             end
 
-            expire = nil
+            expiration = nil
             begin
               assert(o.has_key?('expiry'))
               assert(o['expiry'].length()>0)
-              expire = Util::ETime::FromDateStr(o['expiry'])
-              assert(expire.kind_of?(Util::ETime))
+              expiration = Util::ETime::FromDateStr(o['expiry'])
+              assert(expiration.kind_of?(Util::ETime))
             end
 
             strike = nil
@@ -446,7 +343,7 @@ module Google
             ret.push({ :name        => name,
                        :underlying  => underlying,
                        :option_type => option_type,
-                       :expire      => expire,
+                       :expiration  => expiration,
                        :strike      => strike,
                        :price       => price,
                        :change      => change,

@@ -1,7 +1,26 @@
 require 'solid_assert'
 require 'time'
+require 'mechanize'
 
 module Util
+
+  # Enhanced Mechanize
+  #   Inherits from:
+
+  class EMechanize < Mechanize
+    
+    def get(uri, parameters = [], referer = nil, headers = {})
+      logger.info("Making Web Request: " +
+                  "uri=[#{uri}] " +
+                  "parameters[#{parameters.to_yaml()}]")
+      super
+    end
+    
+    def logger()
+      return Rails.logger
+    end
+  end
+
 
   # Enhanced Time
   #   Inherits from: http://ruby-doc.org/core-1.9.3/Time.html
@@ -40,6 +59,10 @@ module Util
 
     def toDateStr()
       return self.strftime("%Y-%m-%d")
+    end
+
+    def toDateStrYYYYMMDD()
+      return self.strftime("%Y%m%d")
     end
 
     # Cloners
@@ -136,6 +159,111 @@ module Util
 
     def weekday?()
       return !(self.weekend?)
+    end
+    
+  end
+
+
+ 
+  class MarketTime
+    
+    # Grace time means: before and after market hours where we do not
+    # want to fetch data, allowing for data providers to settle
+    TIMES = {
+      # gb = gracetime before
+      # ga = gracetime after
+      :open_gb  => { :hour => 06, :min => 00 },
+      :open     => { :hour => 06, :min => 30 },
+      :open_ga  => { :hour => 07, :min => 00 },
+      :close_gb => { :hour => 12, :min => 30 },
+      :close    => { :hour => 13, :min => 00 },
+      :close_ga => { :hour => 13, :min => 30 } }
+
+    # Helpers
+    def MarketTime.BeforeHourMin?(time, hour, min)
+      assert(time.kind_of?(ETime))
+      assert(hour.kind_of?(Integer))
+      assert(min.kind_of?(Integer))
+      return true if time.hour < hour
+      return true if time.min  < min
+      return false
+    end
+
+    def MarketTime.AfterHourMin?(time, hour, min)
+      assert(time.kind_of?(ETime))
+      assert(hour.kind_of?(Integer))
+      assert(min.kind_of?(Integer))
+      return true if time.hour > hour
+      return true if time.min  > min
+      return false
+    end
+
+    # MarketTime Queries
+    def MarketTime.BetweenHourMin?(time, hour1, min1, hour2, min2)
+      assert(time.kind_of?(ETime))
+      assert(hour1.kind_of?(Integer))
+      assert(min1.kind_of?(Integer))
+      assert(hour2.kind_of?(Integer))
+      assert(min2.kind_of?(Integer))
+      return (MarketTime::AfterHourMin(time, hour1, min1) &&
+              MarketTime::BeforeHourMin(time, hour2, min2))
+    end
+    
+    def MarketTime.BeforeOpen?(time)
+      assert(time.kind_of?(Util::ETime))
+      return time.timeBeforeHourMin?(time,
+                                     MarketTime::TIMES[:open][:hour],
+                                     MarketTime::TIMES[:open][:min])
+    end
+
+    def MarketTime.AfterOpen?(time)
+      assert(time.kind_of?(Util::ETime))
+      return (!MarketTime::BeforeOpen())
+    end
+
+    def MarketTime.BeforeClose?(time)
+      assert(time.kind_of?(Util::ETime))
+      return time.timeBeforeHourMin?(time,
+                                     MarketTime::TIMES[:close][:hour],
+                                     MarketTime::TIMES[:close][:min])
+    end
+
+    def MarketTime.AfterClose?(time)
+      assert(time.kind_of?(Util::ETime))
+      return (!MarketTime::BeforeClose())
+    end
+
+    def MarketTime.Open?(time)
+      assert(time.kind_of?(Util::ETime))
+      return (!MarketTime::Close?(time))
+    end
+
+    def MarketTime.Close?(time)
+      assert(time.kind_of?(Util::ETime))
+      return (MarketTime::BeforeOpen?(time) || MarketTime::AfterClose?(time))
+    end
+    
+    def MarketTime.OpenGrace?(time)
+      assert(time.kind_of?(Util::ETime))
+      return (time.timeBetweenHourMin?(time,
+                                       MarketTime::TIMES[:open_gb][:hour],
+                                       MarketTime::TIMES[:open_gb][:min],
+                                       MarketTime::TIMES[:open_ga][:hour],
+                                       MarketTime::TIMES[:open_ga][:min]))
+    end
+    
+    def MarketTime.CloseGrace?(time)
+      assert(time.kind_of?(Util::ETime))
+      return (time.timeBetweenHourMin?(time,
+                                       MarketTime::TIMES[:close_gb][:hour],
+                                       MarketTime::TIMES[:close_gb][:min],
+                                       MarketTime::TIMES[:close_ga][:hour],
+                                       MarketTime::TIMES[:close_ga][:min]))
+    end
+
+    def MarketTime.Grace?(time)
+      assert(time.kind_of?(Util::ETime))
+      return (MarketTime::OpenGrace?(time) || MarketTime::CloseGrace?(time))
     end
     
   end

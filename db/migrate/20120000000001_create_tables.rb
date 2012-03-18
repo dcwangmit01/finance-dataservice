@@ -8,7 +8,7 @@ class CreateTables < ActiveRecord::Migration
       #t.column   :exchange, :enum, :limit => [:nasdaq, :nyse, :amex], :null => true
       t.string    :ticker_type,  :null => false
       t.string    :status,       :null => false, :default => "active"
-      t.timestamp :fetched_at,   :null => true
+      t.timestamp :fetched_at,    :null => true
       t.timestamps
     end
     # Rails test framework does not launch execute statements
@@ -45,7 +45,7 @@ class CreateTables < ActiveRecord::Migration
       t.string  :name
       t.string  :underlying, :null => false
       t.column  :option_type, "ENUM('put', 'call')", :null => false
-      t.date    :exp,        :null => false
+      t.date    :expiration,     :null => false
       t.integer :strike,     :null => false
       t.integer :price,      :null => true #, :default => :null
       t.integer :change,     :null => true #, :default => :null

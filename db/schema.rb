@@ -24,7 +24,7 @@ ActiveRecord::Schema.define(:version => 20120000000001) do
     t.string   "name"
     t.string   "underlying",                              :null => false
     t.string   "option_type", :limit => 0,                :null => false
-    t.date     "exp",                                     :null => false
+    t.date     "expiration",                              :null => false
     t.integer  "strike",                                  :null => false
     t.integer  "price"
     t.integer  "change"

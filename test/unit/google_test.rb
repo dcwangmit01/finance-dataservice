@@ -65,7 +65,7 @@ class GoogleTest < ActiveSupport::TestCase
       assert(ele.has_key?(:name))
       assert(ele.has_key?(:underlying))
       assert(ele.has_key?(:option_type))
-      assert(ele.has_key?(:expire))
+      assert(ele.has_key?(:expiration))
       assert(ele.has_key?(:strike))
       assert(ele.has_key?(:price))
       assert(ele.has_key?(:change))
