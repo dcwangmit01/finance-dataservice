@@ -14,20 +14,20 @@ module Google
 
     def MarketDate.GetLastMarketDate()
       
-      begin # Prime a non-existent cache
-        if (!Cache::Exists(DATE))
+      begin # Prime a non-existent appSetting
+        if (!AppSetting::Exists(DATE))
           logger.info("Priming LastMarketDate: key=[#{DATE}] does not exist")
-          Cache.Create(DATE, Util::ETime::at(0).to8601Str())
+          AppSetting.Create(DATE, Util::ETime::at(0).to8601Str())
         end
-        if (!Cache::Exists(UPDATED))
+        if (!AppSetting::Exists(UPDATED))
           logger.info("Priming LastMarketDate: key=[#{UPDATED}] does not exist")
-          Cache.Create(UPDATED, Util::ETime::at(0).to8601Str())
+          AppSetting.Create(UPDATED, Util::ETime::at(0).to8601Str())
         end
       end
 
       # Create some variables used by the calculations
       now = Util::ETime.new()
-      up = Util::ETime::From8601Str(Cache::Get(UPDATED).value)
+      up = Util::ETime::From8601Str(AppSetting::Get(UPDATED).value)
       
       # figure out if and why we need to update the historical data,
       # and set variables msg and dirty
@@ -62,7 +62,7 @@ module Google
         end
       end
 
-      prevLmd = Util::ETime::From8601Str(Cache::Get(DATE).value)
+      prevLmd = Util::ETime::From8601Str(AppSetting::Get(DATE).value)
       if (!dirty)
         # If there is no updated needed, then return the previous
         # lastModifiedDate
@@ -86,8 +86,8 @@ module Google
 
         # Set the fields in the database
         ActiveRecord::Base.transaction do
-          Cache::Set(DATE,    newLmd.to8601Str())
-          Cache::Set(UPDATED, now.to8601Str())
+          AppSetting::Set(DATE,    newLmd.to8601Str())
+          AppSetting::Set(UPDATED, now.to8601Str())
           logger.info("Updating LastMarketDate " +
                       "prevLmd=[#{prevLmd.to8601Str()}] " +
                       "newLmd=[#{newLmd.to8601Str()}]" +
@@ -398,7 +398,7 @@ module Google
             price = nil
             begin
               assert(o.has_key?('p'))
-              logger.trace("parsing price[#{o[:p]}]")
+              logger.debug("parsing price[#{o[:p]}]")
               price = (o['p'].match(/^-$/)) ? nil : Integer(o['p'].to_f() * 100)
               # nil is okay
             end
@@ -406,7 +406,7 @@ module Google
             change = nil
             begin
               assert(o.has_key?('c'))
-              logger.trace("parsing change[#{o[:c]}]")
+              logger.debug("parsing change[#{o[:c]}]")
               change = (o['c'].match(/^-$/)) ? nil : Integer(o['c'].to_f() * 100)
               # nil is okay
             end
@@ -414,7 +414,7 @@ module Google
             bid = nil
             begin
               assert(o.has_key?('b'))
-              logger.trace("parsing bid[#{o['b']}]")
+              logger.debug("parsing bid[#{o['b']}]")
               bid = (o['b'].match(/^-$/)) ? nil : Integer(o['b'].to_f() * 100)
               # nil is okay
             end
@@ -422,7 +422,7 @@ module Google
             ask = nil
             begin
               assert(o.has_key?('a'))
-              logger.trace("parsing ask[#{o['a']}]")
+              logger.debug("parsing ask[#{o['a']}]")
               ask = (o['a'].match(/^-$/)) ? nil : Integer(o['a'].to_f() * 100)
               # nil is okay
             end
@@ -430,7 +430,7 @@ module Google
             volume = nil
             begin
               assert(o.has_key?('vol'))
-              logger.trace("parsing volume[#{o['vol']}]")
+              logger.debug("parsing volume[#{o['vol']}]")
               volume = (o['vol'].match(/^-$/)) ? nil : Integer(o['vol'].to_f() * 100)
               # nil is okay
             end
@@ -438,7 +438,7 @@ module Google
             interest = nil
             begin
               assert(o.has_key?('oi'))
-              logger.trace("parsing interest[#{o['oi']}]")
+              logger.debug("parsing interest[#{o['oi']}]")
               interest = (o['oi'].match(/^-$/)) ? nil : Integer(o['oi'].to_f() * 100)
               # nil is okay
             end

@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class CacheTest < ActiveSupport::TestCase
+class AppSettingTest < ActiveSupport::TestCase
   # test "the truth" do
   #   assert true
   # end

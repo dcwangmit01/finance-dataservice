@@ -1,9 +1,9 @@
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
 
 one:
-  key: key1
-  value: value1
+  key: MyString
+  value: MyString
 
 two:
-  key: key2
-  value: value2
+  key: MyString
+  value: MyString

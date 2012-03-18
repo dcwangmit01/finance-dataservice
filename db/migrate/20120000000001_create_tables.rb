@@ -22,7 +22,7 @@ class CreateTables < ActiveRecord::Migration
     #   CHANGE COLUMN exchange exchange  ENUM('nyse', 'nasdaq', 'amex') DEFAULT NULL;
     # SQL
 
-    create_table :caches do |t|
+    create_table :app_settings do |t|
       t.string :key
       t.string :value
       t.timestamps

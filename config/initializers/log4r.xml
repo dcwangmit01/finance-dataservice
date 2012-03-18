@@ -5,12 +5,12 @@ Log Configuration
 <log4r_config>
   
   <pre_config>
-    <custom_levels>TRACE, DEBUG, INFO, WARN, ERROR, FATAL</custom_levels>
+    <custom_levels>DEBUG, INFO, WARN, ERROR, FATAL</custom_levels>
     <global level="ALL"/>
   </pre_config>
   
   <!-- Outputters -->
-  <outputter name="console" type="StdoutOutputter" level="DEBUG" >
+  <outputter name="console_outputter" type="StdoutOutputter" level="DEBUG" >
     <formatter type="Log4r::PatternFormatter">
       <pattern>[%d %T] %M</pattern>
     </formatter>
@@ -40,19 +40,19 @@ Log Configuration
   <!-- Loggers -->
   <logger name="development"
 	  level="ALL" additive="false" trace="true">
-    <outputter>console</outputter>
+    <outputter>console_outputter</outputter>
     <outputter>development_outputter</outputter>
   </logger>
 
   <logger name="production"
 	  level="ALL" additive="false" trace="true">
-    <outputter>console</outputter>
+    <outputter>console_outputter</outputter>
     <outputter>production_outputter</outputter>
   </logger>
   
   <logger name="test"
 	  level="ALL" additive="false" trace="true">
-    <outputter>console</outputter>
+    <outputter>console_outputter</outputter>
     <outputter>test_outputter</outputter>
   </logger>
   

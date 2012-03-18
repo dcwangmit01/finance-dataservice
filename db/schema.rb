@@ -13,7 +13,7 @@
 
 ActiveRecord::Schema.define(:version => 20120000000001) do
 
-  create_table "caches", :force => true do |t|
+  create_table "app_settings", :force => true do |t|
     t.string   "key"
     t.string   "value"
     t.datetime "created_at", :null => false

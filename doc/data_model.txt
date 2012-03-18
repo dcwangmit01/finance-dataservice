@@ -1,55 +1,12 @@
-
-
-Update.LastMarketDate
-  if (cache.Market.LastMarketDate  == nil || cache.Market.LastMarketDateUpdatedAt == nil
-      || ((nowDate.isWeekend?) && !(cache.Market.LastMarketDateUpdatedAt.dateEquals(today)))
-      || ((nowDate.isWeekday?) && (nowdate.timeBefore(marketClose)) && !(cache.Market.LastMarketDateUpdatedAt.dateEquals(today)))
-      || ((nowDate.isWeekday?) && (nowdate.timeAfter(marketClose))  &&  (cache.Market.LastMarketDateUpdatedAt.timeBefore(marketclose)))
-      transaction
-        cache.Market.LastMarketDate = FindLastMarketDateOfDJIATicker
-        cache.Market.LastMarketDateUpdatedAt == nowDate
-      end
-  end
-
-  foreach ticker that is a stock
-    startdate = nil
-    enddate   = nil
-    if (ticker.stock.LastDate == nil)
-      startdate = CONSTANT_START
-      enddate = cache.Market.LastMarketDate
-    else if !(ticker.stock.LastDate.dateEquals(cache.Market.LastMarketDate))
-      startdate = ticker.stock.LastDate
-      enddate = cache.Market.LastMarketDate
-    end
-
-    transaction
-	 Stock.update(ticker, startdate, enddate))
-	 # somehow handle status active
-	 stock.setlastupdate(nowdate) # fetchedat
-         foreach option at stock.getoptions
-           option.hasoptionsat(cache.Market.LastMarketDate)
-           Options.update(ticker, LastMarketDate)
-        end
-    end
-end 
-
-
-
-
 YahooFinance Module: http://www.transparentech.com/opensource/yahoofinance
-
 gem install yahoofinance
-
-rails generate model Technical indicator_type:string date:date value:integer ticker:references
-rails generate controller Technicals
 
 rails destroy model Ticker
 rails destroy model Stock
 rails destroy model Option
+rails destroy model AppSetting
 
 rails generate model Ticker name:string ticker_type:string exchange:string
 rails generate model Stock name:string open:integer high:integer low:integer close:integer volume:integer split:integer date:date
 rails generate model Option name:string underlying:string option_type:string exp:date strike:integer price:integer change:integer bid:integer ask:integer volume:integer interest:integer date:date
-rails generate model Cache namespace:string key:string value:string
-
-
+rails generate model AppSetting key:string value:string

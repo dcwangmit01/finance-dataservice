@@ -63,17 +63,15 @@ module Dataservice
     # Disable colorized Rails Logging
     config.colorize_logging = false
 
-    # TIME
-    # Server Time
-    config.time_zone = "Pacific Time (US & Canada)"
-    # Local Time
-    Time.zone = "Eastern Time (US & Canada)"
 
     # Configuration Log4r
-    require 'log4r'
-    require 'log4r/configurator'
-    Log4r::Configurator.load_xml_file('./conf/log4r.xml')
     config.logger = Log4r::Logger[Rails.env] # Sets the Rails logger
+
+    # TIME
+    #   "Eastern Time (US & Canada)"
+    #   "Pacific Time (US & Canada)"
+    # config.time_zone = <one of the above>
+    # Time.zone        = <one of the above>
 
     # Uncomment to disable SQL Debug logging
     # ActiveRecord::Base.logger = Logger.new('/dev/null')

@@ -1,32 +1,32 @@
 require 'solid_assert'
 
-class Cache < ActiveRecord::Base
+class AppSetting < ActiveRecord::Base
 
-  def Cache.Exists(key)
+  def AppSetting.Exists(key)
     assert(key.kind_of?(String))
     assert(key.length()>0)
-    c = Cache.first(:conditions => { :key => key })
+    c = AppSetting.first(:conditions => { :key => key })
     return (c != nil)
   end
 
-  def Cache.Get(key)
+  def AppSetting.Get(key)
     assert(key.kind_of?(String))
     assert(key.length()>0)
     
-    assert(Cache::Exists(key))
-    c = Cache.first(:conditions => { :key => key })
+    assert(AppSetting::Exists(key))
+    c = AppSetting.first(:conditions => { :key => key })
 
     assert(c != nil)
     return c
   end
 
-  def Cache.Set(key, value)
+  def AppSetting.Set(key, value)
     assert(key.kind_of?(String))
     assert(key.length()>0)
     assert(value.kind_of?(String))
     assert(value.length()>=0)
 
-    c = Cache.Get(key)
+    c = AppSetting.Get(key)
     c.value = value
     c.save()
 
@@ -35,14 +35,14 @@ class Cache < ActiveRecord::Base
   end
 
 
-  def Cache.Create(key, value)
+  def AppSetting.Create(key, value)
     assert(key.kind_of?(String))
     assert(key.length()>0)
     assert(value.kind_of?(String))
     assert(value.length()>=0)
 
-    assert(!Cache::Exists(key))
-    c = Cache.new()
+    assert(!AppSetting::Exists(key))
+    c = AppSetting.new()
     c.key = key
     c.value = value
     c.save()
@@ -50,5 +50,5 @@ class Cache < ActiveRecord::Base
     assert(c != nil)
     return c
   end
-  
+
 end
