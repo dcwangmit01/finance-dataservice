@@ -2,7 +2,9 @@ require File.expand_path('../../config/environment',  __FILE__)
 
 module Dataservice
 
-  SNP500 = %w{MMM ACE ABT ANF ACN ADBE AMD AES AET AFL A GAS APD ARG
+  SNP500 = %w{AKAM}
+
+  SNP500_1 = %w{MMM ACE ABT ANF ACN ADBE AMD AES AET AFL A GAS APD ARG
     AKAM AA ATI AGN ALL ALTR MO AMZN AEE AEP AXP AIG AMT AMP ABC AMGN
     APH APC ADI AON APA AIV APOL AAPL AMAT ADM AIZ T ADSK ADP AN AZO
     AVB AVY AVP BHI BLL BAC BK BCR BAX BBT BEAM BDX BBBY BMS BRK BBY
@@ -37,28 +39,45 @@ module Dataservice
   class Update
     
     def main
+
+      # Ensure that all the tickers exist
       SNP500.each do |ticker|
-        logger.info(ticker)
-        next
-        ActiveRecord::Base.transaction do
-          t1 = Ticker.new()
-          t1.name = ticker
-          t1.ticker_type = :stock
-          t1.status = :active
-          t1.save()
+        if (!Ticker::Exists(ticker))
+          logger.info("Creating Ticker in DB "+
+                      "ticker=[#{ticker}]")
+          # Create it in the DB
+          ActiveRecord::Base.transaction do
+            t1 = Ticker.new()
+            t1.name = ticker
+            t1.ticker_type = :stock
+            t1.status = :active
+            t1.save()
+          end
         end
       end
-    end
 
+      # Update the Stock Data
+      SNP500.each do |ticker|
+        ActiveRecord::Base.transaction do
+          Stock::Update(ticker)
+        end
+      end
+
+      # Update the Stock's Option Data
+      
+
+    end
+    
     def logger
       return Rails.logger
     end
-
+    
   end
 
 u = Update.new()
 u.main()
 end
+
 
 
 

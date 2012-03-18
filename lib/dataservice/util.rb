@@ -9,7 +9,7 @@ module Util
 
     # Constructors and Convertors
     def ETime.FromDate(d)
-      assert(d.kind_of?(d))
+      assert(d.kind_of?(Date))
       return ETime.new(d.year, d.mon, d.day)
     end
     
