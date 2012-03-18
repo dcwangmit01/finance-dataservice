@@ -1,9 +1,5 @@
 require File.expand_path('../../config/environment',  __FILE__)
 
-require 'log4r'
-require 'log4r/configurator'
-Log4r::Configurator.load_xml_file('../conf/log4r.xml')
-
 module Dataservice
 
   SNP500 = %w{MMM ACE ABT ANF ACN ADBE AMD AES AET AFL A GAS APD ARG
@@ -39,15 +35,16 @@ module Dataservice
     WIN WEC WPX WYN WYNN XEL XRX XLNX XL YHOO YUM ZMH ZION}
 
   class Update
-
     
     def main
       SNP500.each do |ticker|
         logger.info(ticker)
+        next
         ActiveRecord::Base.transaction do
           t1 = Ticker.new()
           t1.name = ticker
-          t1.security_type = :stock
+          t1.ticker_type = :stock
+          t1.status = :active
           t1.save()
         end
       end

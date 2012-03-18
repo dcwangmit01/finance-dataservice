@@ -63,10 +63,6 @@ module Dataservice
     # Disable colorized Rails Logging
     config.colorize_logging = false
 
-
-    # Configuration Log4r
-    config.logger = Log4r::Logger[Rails.env] # Sets the Rails logger
-
     # TIME
     #   "Eastern Time (US & Canada)"
     #   "Pacific Time (US & Canada)"
