@@ -21,16 +21,6 @@ class TickerTest < ActiveSupport::TestCase
     end
   end
   
-
-  test "Ticker.updateAll()" do
-    Ticker.UpdateAll()
-  end
-
-  test "Ticker.update()" do
-    
-  end
-  
-
   def logger
     return Rails.logger
   end

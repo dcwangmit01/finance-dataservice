@@ -74,20 +74,13 @@ module Google
           # get the last date
           t = Google::GoogleTicker.new('C')
           # 8 days ago
-          s = Util::ETime.now().cloneDiffSeconds(-8*60*60*24).toDateStr()
+          s = Util::ETime.now().cloneDiffSeconds(-8*60*60*24)
           # 1 day ago
-          e = Util::ETime.now().cloneDiffSeconds(-1*60*60*24).toDateStr()
+          e = Util::ETime.now().cloneDiffSeconds(-1*60*60*24)
           sd = t.getHistoricalStockData(s, e)
-          logger.info(sd.to_yaml())
           assert(sd != nil)
           assert(sd.length()>0)
-          
-          date = sd[-1][:date]
-          assert(date.length()>0)
-          logger.info(date)
-          newLmd = Util::ETime::FromDateStr(date)
-          logger.info(newLmd)
-          logger.info(newLmd.class)
+          newLmd = sd.pop()[:date] # get last date
           assert(newLmd.kind_of?(Util::ETime))
         end
 
@@ -235,23 +228,29 @@ module Google
     @@agent.user_agent_alias = 'Mac Safari'
 
     def initialize(ticker)
+      assert(ticker.kind_of?(String) || ticker.kind_of?(Symbol))
+      assert(ticker.length()>0)
       @ticker = ticker
     end
     
     def doesTickerExist()
       # 8 days ago
-      s = Util::ETime.now().cloneDiffSeconds(-8*60*60*24).toDateStr()
+      s = Util::ETime.now().cloneDiffSeconds(-8*60*60*24)
       # 1 day ago
-      e = Util::ETime.now().cloneDiffSeconds(-1*60*60*24).toDateStr()
+      e = Util::ETime.now().cloneDiffSeconds(-1*60*60*24)
       return (self.getHistoricalStockData(s, e) != nil)
     end
     
     # Returns Data Inclusive of Dates
     def getHistoricalStockData(startdate, enddate)
+      assert(startdate.kind_of?(Util::ETime))
+      assert(enddate.kind_of?(Util::ETime))
+      assert(startdate.dateBefore?(enddate))
+      
       params = {
         :q         => @ticker,
-        :startdate => startdate,
-        :enddate   => enddate,
+        :startdate => startdate.to8601Str(),
+        :enddate   => enddate.to8601Str(),
         :output    => :csv
       }
 
@@ -273,23 +272,24 @@ module Google
         # Skip header row
         #   Date,Open,High,Low,Close,Volume
         if first == true
+          assert(r.length()==6, "Expected CSV of exactly 6 items")
           first = false
           next
         end
         
-        ret.push({ :date   => Date.parse(r[0]).strftime("%Y-%m-%d"),
+        ret.push({ :name   => @ticker,
                    :open   => Integer(r[1].to_f() * 100),
                    :high   => Integer(r[2].to_f() * 100),
                    :low    => Integer(r[3].to_f() * 100),
                    :close  => Integer(r[4].to_f() * 100),
-                   :volume => Integer(r[5]) })
+                   :volume => Integer(r[5]),
+                   :date   => Util::ETime::FromDateStr(r[0]) })
       end
-
       return ret.reverse()
     end
     
     # Returns list of all current active option dates
-    def getOptionDates()
+    def getCurrentOptionDates()
       params = {
         :q      => @ticker,
       }
@@ -308,14 +308,15 @@ module Google
       
       ret = []
       for j in JSON.parse(exp)
-        ret.push(Date.new(j['y'], j['m'], j['d']).strftime("%Y-%m-%d"))
+        ret.push(Util::ETime.new(j['y'], j['m'], j['d']))
       end
       return ret
     end
     
     # Returns option data for a particular date
-    def getOptionData(dateStr)
-      dateParts = dateStr.split('-')
+    def getCurrentOptionData(date)
+      assert(date.kind_of?(Util::ETime))
+      dateParts = date.to8601Str().split('-')
       params = {
         :q      => @ticker,
         :expd   => dateParts[2],
@@ -331,46 +332,141 @@ module Google
         return nil
       end
       
-      ret = JSON.parse(page.body.gsub(/(\w+):/, '"\1":')) # convert to proper json
+      ret = []
+      begin
+        json = JSON.parse(page.body.gsub(/(\w+):/, '"\1":')) # convert to proper json
+        assert(json.has_key?('calls'))
+        assert(json.has_key?('puts'))
+        assert(json['puts'].length()>0)
+        assert(json['calls'].length()>0)
+        assert(json['puts'].length() == json['calls'].length())
+        
+        # puts:
+        # - cid: '681345055999672'   # ?
+        #   name: ''                 # ?
+        #   s: AKAM120317P00020000   # :name
+        #   e: OPRA                  # ?
+        #   p: ! '-'                 # :price
+        #   c: ! '-'                 # :change
+        #   b: ! '-'                 # :bid
+        #   a: '0.01'                # :ask
+        #   oi: '      0'            # :interest
+        #   vol: ! '-'               # :volume
+        #   strike: '20.00'          # :strike
+        #   expiry: Mar 17, 2012     # :expire
+
+        for type in ['puts', 'calls']
+          for o in json[type]
+
+            name = nil
+            begin
+              assert(o.has_key?('s'))
+              name = o['s']
+              assert(name != nil) 
+              assert(name.length()>0)
+            end
+            
+            underlying = nil
+            begin
+              underlying = @ticker
+              assert(underlying != nil)
+              assert(underlying.length()>0)
+            end
+            
+            option_type = nil
+            begin
+              option_type = (type == 'puts') ? 'put' : 'call'
+              assert(option_type.match(/(put|call)/))
+            end
+
+            expire = nil
+            begin
+              assert(o.has_key?('expiry'))
+              assert(o['expiry'].length()>0)
+              expire = Util::ETime::FromDateStr(o['expiry'])
+              assert(expire.kind_of?(Util::ETime))
+            end
+
+            strike = nil
+            begin
+              assert(o.has_key?('strike'))
+              assert(o['strike'] != nil)
+              strike = Integer(o['strike'].to_f() * 100)
+              assert(strike > 0)
+            end
+            
+            price = nil
+            begin
+              assert(o.has_key?('p'))
+              logger.trace("parsing price[#{o[:p]}]")
+              price = (o['p'].match(/^-$/)) ? nil : Integer(o['p'].to_f() * 100)
+              # nil is okay
+            end
+
+            change = nil
+            begin
+              assert(o.has_key?('c'))
+              logger.trace("parsing change[#{o[:c]}]")
+              change = (o['c'].match(/^-$/)) ? nil : Integer(o['c'].to_f() * 100)
+              # nil is okay
+            end
+
+            bid = nil
+            begin
+              assert(o.has_key?('b'))
+              logger.trace("parsing bid[#{o['b']}]")
+              bid = (o['b'].match(/^-$/)) ? nil : Integer(o['b'].to_f() * 100)
+              # nil is okay
+            end
+
+            ask = nil
+            begin
+              assert(o.has_key?('a'))
+              logger.trace("parsing ask[#{o['a']}]")
+              ask = (o['a'].match(/^-$/)) ? nil : Integer(o['a'].to_f() * 100)
+              # nil is okay
+            end
+
+            volume = nil
+            begin
+              assert(o.has_key?('vol'))
+              logger.trace("parsing volume[#{o['vol']}]")
+              volume = (o['vol'].match(/^-$/)) ? nil : Integer(o['vol'].to_f() * 100)
+              # nil is okay
+            end
+
+            interest = nil
+            begin
+              assert(o.has_key?('oi'))
+              logger.trace("parsing interest[#{o['oi']}]")
+              interest = (o['oi'].match(/^-$/)) ? nil : Integer(o['oi'].to_f() * 100)
+              # nil is okay
+            end
+
+            ret.push({ :name        => name,
+                       :underlying  => underlying,
+                       :option_type => option_type,
+                       :expire      => expire,
+                       :strike      => strike,
+                       :price       => price,
+                       :change      => change,
+                       :bid         => bid,
+                       :ask         => ask,
+                       :volume      => volume,
+                       :interest    => interest })
+          end
+        end
+        
+      end
+      
+
+      assert(ret != nil)
       return ret
     end
-
+    
     def logger()
       return Rails.logger
     end
-    
   end
   
 end
-
-COMMENT = <<END
-calls:
-puts:
-- cid: '681345055999672'
-  name: ''
-  s: AKAM120317P00020000
-  e: OPRA
-  p: ! '-'
-  c: ! '-'
-  b: ! '-'
-  a: '0.01'
-  oi: '      0'
-  vol: ! '-'
-  strike: '20.00'
-  expiry: Mar 17, 2012
-- cid: '311136124377695'
-  name: ''
-  s: AKAM120317P00034000
-  e: OPRA
-  p: '0.48'
-  cs: chg
-  c: '+0.20'
-  cp: '71.43'
-  b: '0.47'
-  a: '0.49'
-  oi: '   1430'
-  vol: '    226'
-  strike: '34.00'
-  expiry: Mar 17, 2012
-END
-

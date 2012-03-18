@@ -1,4 +1,4 @@
-
+require 'solid_assert'
 require 'time'
 
 module Util

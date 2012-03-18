@@ -5,11 +5,10 @@ class GoogleTest < ActiveSupport::TestCase
 
   test "MarketDate.GetLastMarketDate" do
     time = Google::MarketDate::GetLastMarketDate()
-    logger.info(time.to_yaml())
-    logger.info(time)
+    logger.info("Time\n" + time.to8601Str())
   end
 
-  test "doesTickerExist" do
+  test "GoogleTicker.doesTickerExist" do
 
     # assert that a ticker does not exist
     t = Google::GoogleTicker.new(:azam)
@@ -22,64 +21,58 @@ class GoogleTest < ActiveSupport::TestCase
 
   end
 
-  test "getHistoricalStockData" do
+  test "GoogleTicker.getHistoricalStockData" do
 
     t = Google::GoogleTicker.new(:akam)
     # 8 days ago
-    s = Util::ETime.now().cloneDiffSeconds(-8*60*60*24).toDateStr()
+    s = Util::ETime.now().cloneDiffSeconds(-8*60*60*24)
     # 1 day ago
-    e = Util::ETime.now().cloneDiffSeconds(-1*60*60*24).toDateStr()
+    e = Util::ETime.now().cloneDiffSeconds(-1*60*60*24)
     
     logger.info("Finding stock data for #{s} #{e}")
+
     sd = t.getHistoricalStockData(s, e)
     assert(sd != nil)
-    
-    logger.info(sd.to_yaml())
-    
+    assert(sd.length()>0)
+    logger.info("Historical Stock Data\n" + sd.to_yaml())
+
     for d in sd
-      assert(d.has_key?(:date) && d[:date].length()==10)
+      assert(d.has_key?(:name) && d.length()>0)
       assert(d.has_key?(:open))
       assert(d.has_key?(:high))
       assert(d.has_key?(:low))
       assert(d.has_key?(:close))
       assert(d.has_key?(:volume))
+      assert(d.has_key?(:date) && d[:date].kind_of?(Util::ETime))
     end
 
   end
 
-  test "getOptionDates getOptionData" do
+  test "GoogleTicker.getOptionDates and GoogleTicker.getOptionData" do
     
     t = Google::GoogleTicker.new(:akam)
-    dates = t.getOptionDates()
-    logger.info(dates.to_yaml())
 
-    assert(dates.length()>0, "unable to find options")
+    dates = t.getCurrentOptionDates()
+    assert(dates != nil)
+    assert(dates.length()>0)
+    logger.info("OptionDates\n" + dates.to_yaml())
     
-    data = t.getOptionData(dates[0])
+    data = t.getCurrentOptionData(dates[0])
+    assert(data != nil)
+    logger.info("OptionData\n" + data.to_yaml())
 
-    logger.info(data.to_yaml())
-
-    assert(data.has_key?('puts'))
-    assert(data.has_key?('calls'))
-
-    assert(data['puts'].length()>0)
-    assert(data['calls'].length()>0)
-
-    for type in ['puts', 'calls']
-      for ele in data[type]
-        assert(ele.has_key?('cid'))
-        assert(ele.has_key?('name'))
-        assert(ele.has_key?('s'))
-        assert(ele.has_key?('e'))
-        assert(ele.has_key?('p'))
-        assert(ele.has_key?('c'))
-        assert(ele.has_key?('b'))
-        assert(ele.has_key?('a'))
-        assert(ele.has_key?('oi'))
-        assert(ele.has_key?('vol'))
-        assert(ele.has_key?('strike'))
-        assert(ele.has_key?('expiry'))
-      end
+    data.each do |ele|
+      assert(ele.has_key?(:name))
+      assert(ele.has_key?(:underlying))
+      assert(ele.has_key?(:option_type))
+      assert(ele.has_key?(:expire))
+      assert(ele.has_key?(:strike))
+      assert(ele.has_key?(:price))
+      assert(ele.has_key?(:change))
+      assert(ele.has_key?(:bid))
+      assert(ele.has_key?(:ask))
+      assert(ele.has_key?(:volume))
+      assert(ele.has_key?(:interest))
     end
   end
 

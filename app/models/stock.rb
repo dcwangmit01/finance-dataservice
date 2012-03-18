@@ -2,8 +2,21 @@ class Stock < ActiveRecord::Base
 
   EXPIRATION_DAYS = 7
 
-  def Stock.Update(name, startETime, stopETime)
-    logger.info("name=[#{name}]startETime=[#{startETime}] stopETime=[#{stopETime}]")
+  def Stock.GetLastRecord(name)
+    # Get the latest historical record to see when it was last updated
+    s = Stock.find(:last, :order => "date ASC", :conditions => { :name => t.name })
+    return s # nil is okay
+  end
+
+  def Stock.Update(name, start, stop)
+    assert(name.kind_of?(String))
+    assert(name.length()>0)
+    assert(start.kind_of?(ETime))
+    assert(stop.kind_of?(ETime))
+    
+    assert(!start.dateEquals?(stop))
+
+    
   end
 
   def Stock.CalculateStatusActiveDelistedUnknown(name)
