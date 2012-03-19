@@ -45,15 +45,15 @@ module Google
           if (# if has not checked today
               !up.dateEqual?(now) &&
               # && the time is before market close grace time
-              MarketTime::BeforeClose?(now) && !MarketTime::CloseGrace?(now))
+              Util::MarketTime::BeforeClose?(now) && !Util::MarketTime::CloseGrace?(now))
             msg = ("Updating LastMarketDate: " +
                    "weekday before market close " +
                    "up=[#{up.to8601Str()}] now=[#{now.to8601Str()}]")
             dirty = true
           elsif (# if the time is now after market close grace time
-                 MarketTime::AfterClose?(now) && !MarketTime::CloseGrace?(now) &&
+                 Util::MarketTime::AfterClose?(now) && !Util::MarketTime::CloseGrace?(now) &&
                  # && the last time we checked is before market close
-                 MarketTime::BeforeClose?(up))
+                 Util::MarketTime::BeforeClose?(up))
             msg = ("Updating LastMarketDate: " +
                    "weekday after market close " +
                    "up=[#{up.to8601Str()}] now=[#{now.to8601Str()}]")

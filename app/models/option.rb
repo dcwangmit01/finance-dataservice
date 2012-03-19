@@ -77,7 +77,16 @@ class Option < ActiveRecord::Base
     
     # Break out if it is not the right time to update
     #   Only update the options during non-trading times
-    if (now.weekday?() && (MarketTime::Grace?(now) || MarketTime::Open?(now)))
+    if (now.weekday?() && (Util::MarketTime::Grace?(now) || Util::MarketTime::Open?(now)))
+      logger.info("Breaking out because it's not the right time to update "+
+                  "now=[#{now.to8601Str()}] " +
+                  "weekday?=[#{now.weekday?()}] " +
+                  "grace?=[#{Util::MarketTime::Grace?(now)}] " +
+                  "open?=[#{Util::MarketTime::Open?(now)}] " +
+                  "opengrace?=[#{Util::MarketTime::OpenGrace?(now)}] " +
+                  "closegrace?=[#{Util::MarketTime::CloseGrace?(now)}] " +
+                  "")
+
       return
     end
 

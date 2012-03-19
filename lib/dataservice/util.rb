@@ -190,18 +190,16 @@ module Util
       assert(time.kind_of?(ETime))
       assert(hour.kind_of?(Integer))
       assert(min.kind_of?(Integer))
-      return true if time.hour < hour
-      return true if time.min  < min
-      return false
+
+      return ((time.hour * 60) + time.min) < ((hour * 60) + min)
     end
 
     def MarketTime.AfterHourMin?(time, hour, min)
       assert(time.kind_of?(ETime))
       assert(hour.kind_of?(Integer))
       assert(min.kind_of?(Integer))
-      return true if time.hour > hour
-      return true if time.min  > min
-      return false
+
+      return ((time.hour * 60) + time.min) > ((hour * 60) + min)
     end
 
     # MarketTime Queries
@@ -211,32 +209,32 @@ module Util
       assert(min1.kind_of?(Integer))
       assert(hour2.kind_of?(Integer))
       assert(min2.kind_of?(Integer))
-      return (MarketTime::AfterHourMin(time, hour1, min1) &&
-              MarketTime::BeforeHourMin(time, hour2, min2))
+      return (MarketTime::AfterHourMin?(time, hour1, min1) &&
+              MarketTime::BeforeHourMin?(time, hour2, min2))
     end
     
     def MarketTime.BeforeOpen?(time)
       assert(time.kind_of?(Util::ETime))
-      return time.timeBeforeHourMin?(time,
-                                     MarketTime::TIMES[:open][:hour],
-                                     MarketTime::TIMES[:open][:min])
+      return MarketTime::BeforeHourMin?(time,
+                                        MarketTime::TIMES[:open][:hour],
+                                        MarketTime::TIMES[:open][:min])
     end
-
+    
     def MarketTime.AfterOpen?(time)
       assert(time.kind_of?(Util::ETime))
-      return (!MarketTime::BeforeOpen())
+      return (!MarketTime::BeforeOpen?(time))
     end
 
     def MarketTime.BeforeClose?(time)
       assert(time.kind_of?(Util::ETime))
-      return time.timeBeforeHourMin?(time,
-                                     MarketTime::TIMES[:close][:hour],
-                                     MarketTime::TIMES[:close][:min])
+      return MarketTime::BeforeHourMin?(time,
+                                        MarketTime::TIMES[:close][:hour],
+                                        MarketTime::TIMES[:close][:min])
     end
 
     def MarketTime.AfterClose?(time)
       assert(time.kind_of?(Util::ETime))
-      return (!MarketTime::BeforeClose())
+      return (!MarketTime::BeforeClose?(time))
     end
 
     def MarketTime.Open?(time)
@@ -251,20 +249,20 @@ module Util
     
     def MarketTime.OpenGrace?(time)
       assert(time.kind_of?(Util::ETime))
-      return (time.timeBetweenHourMin?(time,
-                                       MarketTime::TIMES[:open_gb][:hour],
-                                       MarketTime::TIMES[:open_gb][:min],
-                                       MarketTime::TIMES[:open_ga][:hour],
-                                       MarketTime::TIMES[:open_ga][:min]))
+      return (MarketTime::BetweenHourMin?(time,
+                                          MarketTime::TIMES[:open_gb][:hour],
+                                          MarketTime::TIMES[:open_gb][:min],
+                                          MarketTime::TIMES[:open_ga][:hour],
+                                          MarketTime::TIMES[:open_ga][:min]))
     end
     
     def MarketTime.CloseGrace?(time)
       assert(time.kind_of?(Util::ETime))
-      return (time.timeBetweenHourMin?(time,
-                                       MarketTime::TIMES[:close_gb][:hour],
-                                       MarketTime::TIMES[:close_gb][:min],
-                                       MarketTime::TIMES[:close_ga][:hour],
-                                       MarketTime::TIMES[:close_ga][:min]))
+      return (MarketTime::BetweenHourMin?(time,
+                                          MarketTime::TIMES[:close_gb][:hour],
+                                          MarketTime::TIMES[:close_gb][:min],
+                                          MarketTime::TIMES[:close_ga][:hour],
+                                          MarketTime::TIMES[:close_ga][:min]))
     end
 
     def MarketTime.Grace?(time)
