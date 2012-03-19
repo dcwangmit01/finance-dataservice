@@ -35,7 +35,7 @@ gem 'jquery-rails'
 # gem 'capistrano'
 
 # To use debugger
-gem 'ruby-debug19', :require => 'ruby-debug'
+# gem 'ruby-debug19', :require => 'ruby-debug'
 
 ###########################################################
 # Custom Section
@@ -45,7 +45,7 @@ gem "mechanize"
 gem "json"
 gem "solid_assert"
 
-# source 'https://gems.gemfury.com/8n1rdTK8pezvcsyVmmgJ/' 
-#gem 'linecache19',       '>= 0.5.13'
-#gem 'ruby-debug-base19', '>= 0.11.26'
-#gem 'ruby-debug19'
+source 'https://gems.gemfury.com/8n1rdTK8pezvcsyVmmgJ/' 
+gem 'linecache19',       '>= 0.5.13'
+gem 'ruby-debug-base19', '>= 0.11.26'
+gem 'ruby-debug19'
