@@ -40,6 +40,6 @@
   rake test
   
 * Run the Program
-  RAILS_ENV=production rake db:create db:migrate
+  RAILS_ENV=production rake db:drop db:create db:migrate
   script/rails runner -e production bin/update.rb
 

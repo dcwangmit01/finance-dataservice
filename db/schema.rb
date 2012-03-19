@@ -22,19 +22,19 @@ ActiveRecord::Schema.define(:version => 20120000000001) do
 
   create_table "options", :force => true do |t|
     t.string   "name"
-    t.string   "underlying",                              :null => false
-    t.string   "option_type", :limit => 0,                :null => false
-    t.date     "expiration",                              :null => false
-    t.integer  "strike",                                  :null => false
+    t.string   "underlying",               :null => false
+    t.string   "option_type", :limit => 0, :null => false
+    t.date     "expiration",               :null => false
+    t.integer  "strike",                   :null => false
     t.integer  "price"
     t.integer  "change"
     t.integer  "bid"
     t.integer  "ask"
     t.integer  "volume"
-    t.integer  "interest",                 :default => 0, :null => false
-    t.date     "date",                                    :null => false
-    t.datetime "created_at",                              :null => false
-    t.datetime "updated_at",                              :null => false
+    t.integer  "interest"
+    t.date     "date",                     :null => false
+    t.datetime "created_at",               :null => false
+    t.datetime "updated_at",               :null => false
   end
 
   create_table "stocks", :force => true do |t|
@@ -53,11 +53,11 @@ ActiveRecord::Schema.define(:version => 20120000000001) do
 
   create_table "tickers", :force => true do |t|
     t.string   "name"
-    t.string   "ticker_type",                       :null => false
-    t.string   "status",      :default => "active", :null => false
+    t.string   "ticker_type", :limit => 0,                       :null => false
+    t.string   "status",                   :default => "active", :null => false
     t.datetime "fetched_at"
-    t.datetime "created_at",                        :null => false
-    t.datetime "updated_at",                        :null => false
+    t.datetime "created_at",                                     :null => false
+    t.datetime "updated_at",                                     :null => false
   end
 
 end

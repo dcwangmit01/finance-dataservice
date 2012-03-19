@@ -3,10 +3,7 @@ class CreateTables < ActiveRecord::Migration
     create_table :tickers do |t|
       t.string    :name
       #t.column   :ticker_type, "ENUM('stock', 'option')", :null => false
-      #t.column   :exchange, "ENUM('nasdaq', 'nyse', 'amex')", :null => true
-      #t.column   :ticker_type, :enum, :limit => [:stock, :option], :null => false
-      #t.column   :exchange, :enum, :limit => [:nasdaq, :nyse, :amex], :null => true
-      t.string    :ticker_type,  :null => false
+      t.column    :ticker_type, "ENUM('stock', 'option')", :null => false
       t.string    :status,       :null => false, :default => "active"
       t.timestamp :fetched_at,    :null => true
       t.timestamps
@@ -52,7 +49,7 @@ class CreateTables < ActiveRecord::Migration
       t.integer :bid,        :null => true #, :default => :null
       t.integer :ask,        :null => true #, :default => :null
       t.integer :volume,     :null => true #, :default => :null
-      t.integer :interest,   :null => false, :default => 0
+      t.integer :interest,   :null => true #, :default => :null
       t.date    :date,       :null => false
       t.timestamps
     end
