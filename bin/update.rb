@@ -2,9 +2,9 @@ require File.expand_path('../../config/environment',  __FILE__)
 
 module Dataservice
 
-  SNP500 = %w{AKAM}
+  INDEXES = %w{QQQ SPY GLD IVV}
 
-  SNP500_1 = %w{MMM ACE ABT ANF ACN ADBE AMD AES AET AFL A GAS APD ARG
+  SNP500 = %w{MMM ACE ABT ANF ACN ADBE AMD AES AET AFL A GAS APD ARG
     AKAM AA ATI AGN ALL ALTR MO AMZN AEE AEP AXP AIG AMT AMP ABC AMGN
     APH APC ADI AON APA AIV APOL AAPL AMAT ADM AIZ T ADSK ADP AN AZO
     AVB AVY AVP BHI BLL BAC BK BCR BAX BBT BEAM BDX BBBY BMS BRK BBY
@@ -40,8 +40,12 @@ module Dataservice
     
     def main
 
+      tickers = []
+      tickers.concat(INDEXES)
+      tickers.concat(SNP500)
+
       # Ensure that all the tickers exist
-      SNP500.each do |ticker|
+      tickers.each do |ticker|
         if (!Ticker::Exists(ticker))
           logger.info("Creating Ticker in DB "+
                       "ticker=[#{ticker}]")
@@ -56,23 +60,21 @@ module Dataservice
         end
       end
 
+      # Update the Stock's Option Data First
+      tickers.each do |ticker|
+        ActiveRecord::Base.transaction do
+          Option::Update(ticker)
+        end
+      end
+      
+      
       # Update the Stock Data
-      SNP500.each do |ticker|
-        logger.info(ticker.class)
-
+      tickers.each do |ticker|
         ActiveRecord::Base.transaction do
           Stock::Update(ticker)
         end
-
-        expirations = Option::GetExpirations(ticker)
-        logger.info(expirations.to_yaml())
-        Option::Update(ticker)
-        
       end
-
-      # Update the Stock's Option Data
-
-
+      
     end
     
     def logger

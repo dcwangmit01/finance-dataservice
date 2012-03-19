@@ -4,7 +4,7 @@ require 'dataservice/google'
 class Stock < ActiveRecord::Base
 
   EXPIRATION_DAYS = 7
-  PRIME = Util::ETime.new(2012, 2, 1)
+  PRIME = Util::ETime.new(2001, 1, 1)
   
   def Stock.GetLastRecord(name)
     assert(name.kind_of?(String))

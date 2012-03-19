@@ -9,16 +9,16 @@ module Util
 
   class EMechanize < Mechanize
 
-    THROTTLE_MIN = 20
-    THROTTLE_MAX = 45
+    THROTTLE_MIN = 10
+    THROTTLE_MAX = 20
     
     def get(uri, parameters = [], referer = nil, headers = {})
       sleepTime = Random.rand(THROTTLE_MIN..THROTTLE_MAX)
-      sleep(sleepTime)
       logger.info("Making Web Request: " +
                   "uri=[#{uri}] " +
                   "parameters=[#{parameters.to_yaml()}] " +
                   "sleeping=[#{sleepTime}]")
+      sleep(sleepTime)
       super
     end
     

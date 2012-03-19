@@ -254,7 +254,7 @@ module Google
         #   strike: '20.00'          # :strike
         #   expiry: Mar 17, 2012     # :expiration
 
-        for type in ['puts', 'calls']
+        for type in ['calls', 'puts']
           for o in json[type]
 
             name = nil
