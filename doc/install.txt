@@ -1,0 +1,45 @@
+
+* Clone a new linux machine
+* Install some utils
+  sudo apt-get update
+  sudo apt-get install curl git bash
+* Install RVM
+  bash -s stable < <(curl -s https://raw.github.com/wayneeseguin/rvm/master/binscripts/rvm-installer)
+  source ~/.bashrc
+  rvm requirements
+    # Then follow the instructions
+    sudo apt-get update
+    sudo apt-get install build-essential openssl libreadline6 \
+      libreadline6-dev curl git-core zlib1g zlib1g-dev libssl-dev \
+      libyaml-dev libsqlite3-0 libsqlite3-dev sqlite3 libxml2-dev \
+      libxslt-dev autoconf libc6-dev ncurses-dev automake libtool \
+      bison subversion
+* Install Mysql
+  sudo apt-get install mysql-server mysql-client libmysql-ruby libmysqlclient-dev
+  sudo apt-get install nodejs
+* Install ruby
+  rvm install 1.9.3
+* Set the default ruby to be 
+  rvm --default use 1.9.3
+* Install missing gems
+  # Install one in particular, which requires an argument
+  gem install ruby-debug19 -- --with-ruby-include=\$rvm_path/src/ruby-1.9.3-p125 
+  gem install linecache19 -- --with-ruby-include=\$rvm_path/src/ruby-1.9.3-p125
+  # then install the rest
+  bundle install
+
+
+* Clone the repository
+  git clone ssh://dave@s.davidwang.com:2222/var/git/dataservice
+  git config --global user.name "David Wang"
+  git config --global user.email "dcwangmit01@gmail.com"
+
+
+* Test
+  rake db:drop db:create db:migrate test:prepare
+  rake test
+  
+* Run the Program
+  RAILS_ENV=production rake db:create db:migrate
+  script/rails runner -e production bin/update.rb
+
