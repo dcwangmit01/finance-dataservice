@@ -8,11 +8,17 @@ module Util
   #   Inherits from:
 
   class EMechanize < Mechanize
+
+    THROTTLE_MIN = 20
+    THROTTLE_MAX = 45
     
     def get(uri, parameters = [], referer = nil, headers = {})
+      sleepTime = Random.rand(THROTTLE_MIN..THROTTLE_MAX)
+      sleep(sleepTime)
       logger.info("Making Web Request: " +
                   "uri=[#{uri}] " +
-                  "parameters[#{parameters.to_yaml()}]")
+                  "parameters=[#{parameters.to_yaml()}] " +
+                  "sleeping=[#{sleepTime}]")
       super
     end
     

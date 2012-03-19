@@ -65,37 +65,98 @@ class Option < ActiveRecord::Base
     logger.info("Option.Update Starting "+
                 "ticker=[#{name}])");
 
-    # Create some variables used by the calculations
-    lmd = Google::MarketDate::GetLastMarketDate()        
-    now = Util::ETime.new()
     expirations = Option::GetExpirations(name)
     if (expirations.length == 0)
       logger.info("No Options found for name=[#{name}]")
       return
     end
+
+    # Create some variables used by the calculations
+    now = Util::ETime.new()
+    lmd = Google::MarketDate::GetLastMarketDate()        
     
-    # figure out if and why we need to update the historical data,
-    # and set variables msg and dirty
-
-    expirations.each do |expiration|
-      logger.info(expiration.to_yaml())
-      r = Option::GetLastRecord(name, expiration)
-      
-      if (r == nil)
-        # we need to update
-      else
-        dateoflast = Util::ETime::FromDate(r.date)
-        if (dateoflast.dateEqual?(lmd))
-          # update already happened
-        else
-          # we need to update
-        end
-      end
-
-        
+    # Break out if it is not the right time to update
+    #   Only update the options during non-trading times
+    if (now.weekday?() && (MarketTime::Grace?(now) || MarketTime::Open?(now)))
+      return
     end
+
+    # If we get here, then there might be something to update
+
+    msg = ""
+    dirty = false
+    begin
+
+      for expiration in expirations
+        logger.info(expiration.to_yaml())
+        r = Option::GetLastRecord(name, expiration)
+        
+        if (r == nil)
+          # we need to update
+          Option::FetchAndLoad(name, expiration, lmd)
+        else
+          dateoflast = Util::ETime::FromDate(r.date)
+          if (dateoflast.dateEqual?(lmd))
+            # update already happened
+          else
+            Option::FetchAndLoad(name, expiration, lmd)
+          end
+        end
+        
+        
+      end
       
+    end
 
   end
 
+  def Option::FetchAndLoad(name, expiration, date)
+    assert(name.kind_of?(String))
+    assert(name.length()>0)
+    assert(expiration.kind_of?(Util::ETime))
+    assert(date.kind_of?(Util::ETime))
+
+    logger.info("Executing FetchAndLoad for " +
+                "name=[#{name}] " +
+                "expiration=[#{expiration}] " +
+                "date=[#{date}]")
+    
+    gt = Google::GoogleTicker.new(name)
+    data = gt.getCurrentOptionData(expiration)
+    assert(data != nil)
+
+    for d in data
+      assert(d.has_key?(:name))
+      assert(d.has_key?(:underlying))
+      assert(d.has_key?(:option_type))
+      assert(d.has_key?(:expiration))
+      assert(d.has_key?(:strike))
+      assert(d.has_key?(:price))
+      assert(d.has_key?(:change))
+      assert(d.has_key?(:bid))
+      assert(d.has_key?(:ask))
+      assert(d.has_key?(:volume))
+      assert(d.has_key?(:interest))
+
+      o = Option.new()
+      assert(o != nil)
+      o.name = d[:name]
+      o.underlying = d[:underlying]
+      o.option_type = d[:option_type]
+      o.expiration = d[:expiration].toDate()
+      o.strike = d[:strike]
+      o.price = d[:price]
+      o.change = d[:change]
+      o.bid = d[:bid]
+      o.ask = d[:ask]
+      o.volume = d[:volume]
+      o.interest = d[:interest]
+
+      o.date = date.toDate()
+
+      o.save()
+      
+    end
+
+  end
 end

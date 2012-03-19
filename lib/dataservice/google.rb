@@ -162,7 +162,6 @@ module Google
       #   1-Sep-11 3-Oct-11 1-Nov-11 1-Dec-11 3-Jan-12 1-Feb-12
       #   1-Mar-12
 
-      logger.info(page.to_yaml())
       ret = []
       first = true
       CSV.parse(page.body) do |r|
@@ -179,7 +178,7 @@ module Google
                    :high   => Integer(r[2].to_f() * 100),
                    :low    => Integer(r[3].to_f() * 100),
                    :close  => Integer(r[4].to_f() * 100),
-                   :volume => Integer(r[5]),
+                   :volume => r[5].to_i(),
                    :date   => Util::ETime::FromDateStr(r[0]) })
       end
       return ret.reverse()
@@ -213,7 +212,10 @@ module Google
     # Returns option data for a particular date
     def getCurrentOptionData(date)
       assert(date.kind_of?(Util::ETime))
-      dateParts = date.to8601Str().split('-')
+
+      debug = false
+
+      dateParts = date.toDateStr().split('-').map { |p| p.to_i() }
       params = {
         :q      => @ticker,
         :expd   => dateParts[2],
@@ -295,7 +297,7 @@ module Google
             price = nil
             begin
               assert(o.has_key?('p'))
-              logger.debug("parsing price[#{o[:p]}]")
+              debug &&("parsing price[#{o[:p]}]")
               price = (o['p'].match(/^-$/)) ? nil : Integer(o['p'].to_f() * 100)
               # nil is okay
             end
@@ -303,7 +305,7 @@ module Google
             change = nil
             begin
               assert(o.has_key?('c'))
-              logger.debug("parsing change[#{o[:c]}]")
+              debug &&("parsing change[#{o[:c]}]")
               change = (o['c'].match(/^-$/)) ? nil : Integer(o['c'].to_f() * 100)
               # nil is okay
             end
@@ -311,7 +313,7 @@ module Google
             bid = nil
             begin
               assert(o.has_key?('b'))
-              logger.debug("parsing bid[#{o['b']}]")
+              debug &&("parsing bid[#{o['b']}]")
               bid = (o['b'].match(/^-$/)) ? nil : Integer(o['b'].to_f() * 100)
               # nil is okay
             end
@@ -319,7 +321,7 @@ module Google
             ask = nil
             begin
               assert(o.has_key?('a'))
-              logger.debug("parsing ask[#{o['a']}]")
+              debug &&("parsing ask[#{o['a']}]")
               ask = (o['a'].match(/^-$/)) ? nil : Integer(o['a'].to_f() * 100)
               # nil is okay
             end
@@ -327,16 +329,16 @@ module Google
             volume = nil
             begin
               assert(o.has_key?('vol'))
-              logger.debug("parsing volume[#{o['vol']}]")
-              volume = (o['vol'].match(/^-$/)) ? nil : Integer(o['vol'].to_f() * 100)
+              debug &&("parsing volume[#{o['vol']}]")
+              volume = (o['vol'].match(/^-$/)) ? nil : o['vol'].to_i()
               # nil is okay
             end
 
             interest = nil
             begin
               assert(o.has_key?('oi'))
-              logger.debug("parsing interest[#{o['oi']}]")
-              interest = (o['oi'].match(/^-$/)) ? nil : Integer(o['oi'].to_f() * 100)
+              debug &&("parsing interest[#{o['oi']}]")
+              interest = (o['oi'].match(/^-$/)) ? nil : o['oi'].to_i()
               # nil is okay
             end
 

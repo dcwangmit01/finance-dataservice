@@ -30,7 +30,7 @@ ActiveRecord::Schema.define(:version => 20120000000001) do
     t.integer  "change"
     t.integer  "bid"
     t.integer  "ask"
-    t.integer  "volume",                   :default => 0, :null => false
+    t.integer  "volume"
     t.integer  "interest",                 :default => 0, :null => false
     t.date     "date",                                    :null => false
     t.datetime "created_at",                              :null => false

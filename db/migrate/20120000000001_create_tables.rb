@@ -51,7 +51,7 @@ class CreateTables < ActiveRecord::Migration
       t.integer :change,     :null => true #, :default => :null
       t.integer :bid,        :null => true #, :default => :null
       t.integer :ask,        :null => true #, :default => :null
-      t.integer :volume,     :null => false, :default => 0
+      t.integer :volume,     :null => true #, :default => :null
       t.integer :interest,   :null => false, :default => 0
       t.date    :date,       :null => false
       t.timestamps
