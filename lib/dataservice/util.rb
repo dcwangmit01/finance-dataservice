@@ -4,22 +4,69 @@ require 'mechanize'
 
 module Util
 
+  class EMath
+    def EMath.Numeric?(object)
+        true if Float(object) rescue false
+    end
+  end
+
   # Enhanced Mechanize
   #   Inherits from:
 
   class EMechanize < Mechanize
 
-    THROTTLE_MIN = 10
-    THROTTLE_MAX = 20
+    THROTTLE_MIN = 0
+    THROTTLE_MAX = 1
     
     def get(uri, parameters = [], referer = nil, headers = {})
       sleepTime = Random.rand(THROTTLE_MIN..THROTTLE_MAX)
       logger.info("Making Web Request: " +
-                  "uri=[#{uri}] " +
-                  "parameters=[#{parameters.to_yaml()}] " +
+                  "url=[#{EMechanize::UriParamsToUrl(uri, parameters)}] " +
                   "sleeping=[#{sleepTime}]")
       sleep(sleepTime)
       super
+    end
+
+    def EMechanize.UriParamsToUrl(uri, params)
+      assert(uri.kind_of?(String), "Wrong type for uri class=[#{uri.class}]")
+      assert(uri.length()>0)
+      assert(uri.match(/^http/))
+
+      url = nil
+      if (params == nil || params.length() == 0)
+        url = uri
+      else
+        url = uri + '?' + params.map{ |k, v|"#{k}=#{v}" }.join('&')
+      end
+      
+      return url
+    end
+
+    def EMechanize.UrlToUriParams(url)
+      assert(url.kind_of?(String))
+      assert(url.length()>0)
+      assert(url.match(/^http/))
+
+      ret = nil
+      if !url.match(/\?/)
+        ret = { :uri => url, :params => {} }
+      else
+        parts = url.split(/\?/)
+        assert(parts.length()==2, parts)
+        uri = parts[0]
+        params = {}
+        for p in parts[1].split('&')
+          parts = p.split('=')
+          assert(parts.length()==2)
+          params[parts[0]] = parts[1]
+        end
+        
+        ret = { :uri => uri, :params => params }
+      end
+
+      assert(ret[:uri] != nil)
+      assert(ret[:params] != nil)
+      return ret
     end
     
     def logger()

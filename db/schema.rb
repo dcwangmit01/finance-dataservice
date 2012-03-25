@@ -14,14 +14,20 @@
 ActiveRecord::Schema.define(:version => 20120000000001) do
 
   create_table "app_settings", :force => true do |t|
-    t.string   "key"
+    t.string   "name"
     t.string   "value"
     t.datetime "created_at", :null => false
     t.datetime "updated_at", :null => false
   end
 
+  create_table "dividends", :force => true do |t|
+    t.string  "symbol",                  :null => false
+    t.integer "dividend", :default => 0, :null => false
+    t.date    "date",                    :null => false
+  end
+
   create_table "options", :force => true do |t|
-    t.string   "name"
+    t.string   "symbol",                   :null => false
     t.string   "underlying",               :null => false
     t.string   "option_type", :limit => 0, :null => false
     t.date     "expiration",               :null => false
@@ -37,25 +43,30 @@ ActiveRecord::Schema.define(:version => 20120000000001) do
     t.datetime "updated_at",               :null => false
   end
 
+  create_table "splits", :force => true do |t|
+    t.string  "symbol",                 :null => false
+    t.integer "split_a", :default => 0, :null => false
+    t.integer "split_b", :default => 0, :null => false
+    t.date    "date",                   :null => false
+  end
+
   create_table "stocks", :force => true do |t|
-    t.string   "name",                      :null => false
+    t.string   "symbol",                    :null => false
     t.integer  "open",       :default => 0, :null => false
     t.integer  "high",       :default => 0, :null => false
     t.integer  "low",        :default => 0, :null => false
     t.integer  "close",      :default => 0, :null => false
     t.integer  "volume",     :default => 0, :null => false
-    t.integer  "split",      :default => 0, :null => false
-    t.integer  "dividend",   :default => 0, :null => false
     t.date     "date",                      :null => false
     t.datetime "created_at",                :null => false
     t.datetime "updated_at",                :null => false
   end
 
   create_table "tickers", :force => true do |t|
-    t.string   "name"
-    t.string   "ticker_type", :limit => 0,                       :null => false
+    t.string   "symbol"
+    t.string   "symbol_type", :limit => 0,                       :null => false
+    t.string   "exchange",                 :default => "null"
     t.string   "status",                   :default => "active", :null => false
-    t.datetime "fetched_at"
     t.datetime "created_at",                                     :null => false
     t.datetime "updated_at",                                     :null => false
   end

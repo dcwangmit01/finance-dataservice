@@ -14,8 +14,8 @@ class TickerTest < ActiveSupport::TestCase
       TICKERS.each do |ticker|
         logger.info(ticker)
         t1 = Ticker.new()
-        t1.name = ticker
-        t1.ticker_type = :stock
+        t1.symbol = ticker
+        t1.symbol_type = :stock
         t1.save()
       end
     end

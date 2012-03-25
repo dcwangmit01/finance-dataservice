@@ -1,8 +1,14 @@
 require 'test_helper'
 require 'dataservice/util'
-require 'dataservice/google'
+require 'dataservice/finance'
 
 class UtilTest < ActiveSupport::TestCase
+
+  test "Util::EMath" do
+    assert(Util::EMath::Numeric?("9"))
+    assert(Util::EMath::Numeric?("-9"))
+    assert(!Util::EMath::Numeric?("a"))
+  end
 
   test "ETime.new()" do
     et= Util::ETime.now()

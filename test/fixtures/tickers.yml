@@ -1,16 +1,3 @@
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
 
-one:
-  id: 1
-  name: AKAM
-  ticker_type: stock
-
-two:
-  id: 2
-  name: AKAM120317C00021000
-  ticker_type: option
-
-three:
-  id: 3
-  name: C
-  ticker_type: stock
+# Empty

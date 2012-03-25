@@ -14,3 +14,13 @@ http://ichart.finance.yahoo.com/table.csv
 	&g=d
 	&ignore=.csv
 
+# Dividend and Split  
+http://finance.yahoo.com/q/hp?s=C&a=01&b=1&c=2001&d=04&e=21&f=2012&g=v
+        ?s=C (stock ticker)
+	&a=01	(start month from 0)
+	&b=6	(start date from 1)
+	&c=2004 (start year)
+	&d=03   (end month from 0)
+	&e=7    (end date from 1)
+	&f=2012 (end year)
+	&g=v    (dividends and splits)

@@ -1,5 +1,5 @@
 require 'dataservice/util'
-require 'dataservice/google'
+require 'dataservice/finance'
 
 class Option < ActiveRecord::Base
 

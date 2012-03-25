@@ -1,69 +1,69 @@
 require 'dataservice/util'
-require 'dataservice/google'
+require 'dataservice/finance'
 
 class Stock < ActiveRecord::Base
 
-  EXPIRATION_DAYS = 7
+  DEFAULT_TICKER_DRIVER = Finance::YahooTicker
   PRIME = Util::ETime.new(2001, 1, 1)
   
-  def Stock.GetLastRecord(name)
-    assert(name.kind_of?(String))
-    assert(name.length()>0)
+  def Stock.GetLastRecord(symbol)
+    assert(symbol.kind_of?(String) || symbol.kind_of?(Symbol))
+    assert(symbol.length()>0)
 
     # Get the latest historical record to see when it was last updated
-    s = Stock.find(:last, :order => "date ASC", :conditions => { :name => name })
+    s = Stock.find(:last, :order => "date ASC", :conditions => { :symbol => symbol })
     return s # nil is okay
   end
 
   def Stock.UpdateAll()
     logger.info("UpdateAll Starting")
-    Ticker.all(:order => "name ASC", 
-               :conditions => { :ticker_type => 'stock'}).each do |t|
-      Stock::Update(t.name)
+    Ticker.all(:order => "symbol ASC", 
+               :conditions => { :symbol_type => 'stock'}).each do |t|
+      Stock::Update(t.symbol)
     end    
   end
 
-  def Stock.Update(name)
-    assert(name.kind_of?(String))
-    assert(name.length()>0)
+  def Stock.Update(symbol)
+    assert(symbol.kind_of?(String) || symbol.kind_of?(Symbol))
+    assert(symbol.length()>0)
 
     logger.info("Stock.Update Starting "+
-             "ticker=[#{name}])");
+                "symbol=[#{symbol}])");
 
     # Figure out the next
     start = nil
     begin
-      s = Stock::GetLastRecord(name)
+      s = Stock::GetLastRecord(symbol)
       if (s == nil)
         # There is not yet history for this stock, so prime it.
         logger.debug(PRIME.to_yaml())
         
         start = PRIME
-        logger.info("Priming historical update for ticker: " +
-                    "name=[#{name}]: " +
+        logger.info("Priming historical update for stock: " +
+                    "symbol=[#{symbol}]: " +
                     "start=[#{start.toDateStr()}]")
       else
         # History does exist
         start = Util::ETime::FromDate(s.date)
-        logger.info("Found last historical update for ticker: " +
-                    "name=[#{name}]: " +
+        logger.info("Found last historical update for stock: " +
+                    "symbol=[#{symbol}]: " +
                     "start=[#{start.toDateStr()}]")
       end
     end
     
-    stop = Google::MarketDate::GetLastMarketDate()
+    stop = Finance::MarketDate::GetLastMarketDate()
     if (start.dateBefore?(stop))
-      logger.info("Starting historical update for ticker: " +
-                  "name=[#{name}]: " +
+      logger.info("Starting historical update for stock: " +
+                  "symbol=[#{symbol}]: " +
                   "start=[#{start.toDateStr()}] " +
                   "stop=[#{stop.toDateStr()}]")
       assert(start.kind_of?(Util::ETime))
       assert(stop.kind_of?(Util::ETime))
       assert(!start.dateEqual?(stop))
-      Stock::FetchAndLoad(name, start, stop)
+      Stock::FetchAndLoad(symbol, start, stop)
     else
-      logger.info("Skipping unnecessary historical update for ticker: " +
-                  "name=[#{name}]: " +
+      logger.info("Skipping unnecessary historical update for stock: " +
+                  "symbol=[#{symbol}]: " +
                   "start=[#{start.toDateStr()}] " +
                   "stop=[#{stop.toDateStr()}]")
     end
@@ -71,21 +71,24 @@ class Stock < ActiveRecord::Base
   end
 
   
-  def Stock.FetchAndLoad(name, start, stop)
-    assert(name.kind_of?(String))
-    assert(name.length()>0)
+  def Stock.FetchAndLoad(symbol, start, stop, tickerDataDriver = DEFAULT_TICKER_DRIVER)
+    assert(symbol.kind_of?(String) || symbol.kind_of?(Symbol))
+    assert(symbol.length()>0)
     assert(start.kind_of?(Util::ETime))
     assert(stop.kind_of?(Util::ETime))
     assert(!start.dateEqual?(stop))
+    assert(tickerDataDriver == Finance::YahooTicker ||
+           tickerDataDriver == Finance::GoogleTicker)
 
-    t = Google::GoogleTicker.new(name)
+
+    t = tickerDataDriver.new(symbol)
     
     sd = t.getHistoricalStockData(start, stop)
     assert(sd != nil)
     assert(sd.length()>0)
 
     for d in sd
-      assert(d.has_key?(:name) && d.length()>0)
+      assert(d.has_key?(:symbol) && d.length()>0)
       assert(d.has_key?(:open))
       assert(d.has_key?(:high))
       assert(d.has_key?(:low))
@@ -95,7 +98,7 @@ class Stock < ActiveRecord::Base
 
       s = Stock.new()
       assert(s != nil)
-      s.name = d[:name]
+      s.symbol = d[:symbol]
       s.open = d[:open]
       s.high = d[:high]
       s.low = d[:low]
@@ -105,54 +108,6 @@ class Stock < ActiveRecord::Base
       s.save()
     end
     
-  end
-
-
-  def Stock.CalculateStatusActiveDelistedUnknown(name)
-    # A stock is
-    #   'active' if:
-    #   - A historical db record exists, and the latest is not expired
-    #   - OR Google knows about it
-    #   'delisted' if:
-    #   - A historical db record exists, and the latest is expired
-    #   - AND Google does not know about it.
-    #   'unknown' if:
-    #   - A historical db record does not exist
-    #   - AND Google does not know about it.
-    #   
-    # returns 'active', 'delisted', or 'unknown'
-
-    ret_db_exist   = nil
-    ret_db_expired = nil
-    ret_in_google  = nil
-    ret_status     = nil
-
-    # Check database history, by getting the last historical entry
-    db = Stock.find(:last, :order => "date ASC", :conditions => { :name => name })
-    
-    # Do historical records exist?
-    ret_db_exist = (s!=nil) ? true : false
-    
-    if (ret_db_exist == true)
-      # Are the records Expired?
-      ret_db_expired = ((db.date <=> Date.new().prev_day(EXPIRATION_DAYS)) == -1) ? true : false
-      
-      if (ret_db_expired == false)
-        ret_status = :active
-      else
-        # Does Google know about this ticker?
-        ret_in_google = (Google::GoogleTicker.new(name).doesTickerExist()==true) ? true : false
-        ret_status = (ret_in_google == true) ? :active : :delisted
-      end
-    else
-      # Does Google know about this ticker?
-      ret_in_google = (Google::GoogleTicker.new(name).doesTickerExist()==true) ? true : false
-      ret_status = (ret_in_google == true) ? :active : :unknown
-    end
-    
-    logger.debug("status[#{ret_status}]: db_exist[#{ret_db_exist}] "+
-                 "db_expired[#{ret_db_expired}] in_google[#{ret_in_google}]")
-    return ret_status
   end
 
   def logger()
