@@ -398,7 +398,7 @@ module Finance
     DATE    = 'Cache.MarketData.LastMarketDateTime.value'
     UPDATED = 'Cache.MarketData.LastMarketDateTime.updated'
 
-    def MarketDate.GetLastMarketDate(tickerDataDriver = Finance::YahooTicker)
+    def MarketDate.GetLastMarketDate(tickerDataDriver = Finance::DEFAULT_DATA_DRIVER)
       assert(tickerDataDriver == Finance::YahooTicker ||
              tickerDataDriver == Finance::GoogleTicker)
       
@@ -735,5 +735,10 @@ module Finance
       return Rails.logger
     end
   end
+
+  #####################################################################
+  # Module Constants (must be defined after classes are defined
   
+  DEFAULT_DATA_DRIVER = Finance::YahooTicker
+
 end

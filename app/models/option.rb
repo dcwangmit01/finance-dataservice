@@ -3,12 +3,12 @@ require 'dataservice/finance'
 
 class Option < ActiveRecord::Base
 
-  def Option.GetExpirations(name)
-    assert(name.kind_of?(String))
-    assert(name.length()>0)
+  def Option.GetExpirations(symbol)
+    assert(symbol.kind_of?(String) || symbol.kind_of?(Symbol))
+    assert(symbol.length()>0)
     
-    value_key   = "Cache.Option.OptionsList.#{name}.expirations.value"
-    updated_key = "Cache.Option.OptionsList.#{name}.expirations.updated"
+    value_key   = "Cache.Option.OptionsList.#{symbol}.expirations.value"
+    updated_key = "Cache.Option.OptionsList.#{symbol}.expirations.updated"
     
     begin # Prime a non-existent appSetting
       if (!AppSetting::Exists(value_key))
@@ -21,22 +21,21 @@ class Option < ActiveRecord::Base
       end
     end
     
-    
     # Update the DB cache if necessary
     begin
       # Create some variables used by the calculations
       now = Util::ETime.new()
       updated = Util::ETime::From8601Str(AppSetting::Get(updated_key).value)
-      lmd = Google::MarketDate::GetLastMarketDate()
+      lmd = Finance::MarketDate::GetLastMarketDate()
       
       if (updated.dateBefore?(lmd))
         # Then there is updating to do.
-        t = Google::GoogleTicker.new(name)
+        t = Google::GoogleTicker.new(symbol)
         dates = t.getCurrentOptionDates()
         value = dates.map { |d| d.toDateStr() }.join(",")
         updated = now
         
-        logger.info("Updating Expirations for name=[#{name}] value=[#{value}] updated=[#{updated}]")
+        logger.info("Updating Expirations for symbol=[#{symbol}] value=[#{value}] updated=[#{updated}]")
         AppSetting::Set(value_key, value)
         AppSetting::Set(updated_key, updated.to8601Str())
       end
@@ -58,22 +57,22 @@ class Option < ActiveRecord::Base
     return s # nil is okay
   end
 
-  def Option.Update(name)
-    assert(name.kind_of?(String))
-    assert(name.length()>0)
+  def Option.Update(symbol)
+    assert(symbol.kind_of?(String))
+    assert(symbol.length()>0)
     
     logger.info("Option.Update Starting "+
-                "ticker=[#{name}])");
+                "symbol=[#{symbol}])");
 
-    expirations = Option::GetExpirations(name)
+    expirations = Option::GetExpirations(symbol)
     if (expirations.length == 0)
-      logger.info("No Options found for name=[#{name}]")
+      logger.info("No Options found for symbol=[#{symbol}]")
       return
     end
 
     # Create some variables used by the calculations
     now = Util::ETime.new()
-    lmd = Google::MarketDate::GetLastMarketDate()        
+    lmd = Finance::MarketDate::GetLastMarketDate()        
     
     # Break out if it is not the right time to update
     #   Only update the options during non-trading times
@@ -98,17 +97,17 @@ class Option < ActiveRecord::Base
 
       for expiration in expirations
         logger.info(expiration.to_yaml())
-        r = Option::GetLastRecord(name, expiration)
+        r = Option::GetLastRecord(symbol, expiration)
         
         if (r == nil)
           # we need to update
-          Option::FetchAndLoad(name, expiration, lmd)
+          Option::FetchAndLoad(symbol, expiration, lmd)
         else
           dateoflast = Util::ETime::FromDate(r.date)
           if (dateoflast.dateEqual?(lmd))
             # update already happened
           else
-            Option::FetchAndLoad(name, expiration, lmd)
+            Option::FetchAndLoad(symbol, expiration, lmd)
           end
         end
         
@@ -119,23 +118,23 @@ class Option < ActiveRecord::Base
 
   end
 
-  def Option::FetchAndLoad(name, expiration, date)
-    assert(name.kind_of?(String))
-    assert(name.length()>0)
+  def Option::FetchAndLoad(symbol, expiration, date)
+    assert(symbol.kind_of?(String))
+    assert(symbol.length()>0)
     assert(expiration.kind_of?(Util::ETime))
     assert(date.kind_of?(Util::ETime))
 
     logger.info("Executing FetchAndLoad for " +
-                "name=[#{name}] " +
+                "symbol=[#{symbol}] " +
                 "expiration=[#{expiration}] " +
                 "date=[#{date}]")
     
-    gt = Google::GoogleTicker.new(name)
+    gt = Google::GoogleTicker.new(symbol)
     data = gt.getCurrentOptionData(expiration)
     assert(data != nil)
 
     for d in data
-      assert(d.has_key?(:name))
+      assert(d.has_key?(:symbol))
       assert(d.has_key?(:underlying))
       assert(d.has_key?(:option_type))
       assert(d.has_key?(:expiration))
@@ -149,7 +148,7 @@ class Option < ActiveRecord::Base
 
       o = Option.new()
       assert(o != nil)
-      o.name = d[:name]
+      o.symbol = d[:symbol]
       o.underlying = d[:underlying]
       o.option_type = d[:option_type]
       o.expiration = d[:expiration].toDate()

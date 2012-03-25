@@ -3,7 +3,6 @@ require 'dataservice/finance'
 
 class Stock < ActiveRecord::Base
 
-  DEFAULT_TICKER_DRIVER = Finance::YahooTicker
   PRIME = Util::ETime.new(2001, 1, 1)
   
   def Stock.GetLastRecord(symbol)
@@ -71,7 +70,7 @@ class Stock < ActiveRecord::Base
   end
 
   
-  def Stock.FetchAndLoad(symbol, start, stop, tickerDataDriver = DEFAULT_TICKER_DRIVER)
+  def Stock.FetchAndLoad(symbol, start, stop, tickerDataDriver = Finance::DEFAULT_DATA_DRIVER)
     assert(symbol.kind_of?(String) || symbol.kind_of?(Symbol))
     assert(symbol.length()>0)
     assert(start.kind_of?(Util::ETime))
@@ -98,13 +97,13 @@ class Stock < ActiveRecord::Base
 
       s = Stock.new()
       assert(s != nil)
-      s.symbol = d[:symbol]
-      s.open = d[:open]
-      s.high = d[:high]
-      s.low = d[:low]
-      s.close = d[:close]
-      s.volume = d[:volume]
-      s.date = d[:date].toDateStr()
+      s.symbol  = d[:symbol]
+      s.open    = d[:open]
+      s.high    = d[:high]
+      s.low     = d[:low]
+      s.close   = d[:close]
+      s.volume  = d[:volume]
+      s.date    = d[:date].toDateStr()
       s.save()
     end
     
