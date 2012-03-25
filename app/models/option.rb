@@ -131,7 +131,14 @@ class Option < ActiveRecord::Base
     
     gt = Google::GoogleTicker.new(symbol)
     data = gt.getCurrentOptionData(expiration)
-    assert(data != nil)
+
+    if (data == nil)
+      logger.error("No option data found for " +
+                "name=[#{name}] " +
+                "expiration=[#{expiration.to8601Str()}] " +
+                "date=[#{date.to8601Str()}]")
+      return
+    end
 
     for d in data
       assert(d.has_key?(:symbol))

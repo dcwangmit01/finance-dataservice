@@ -230,7 +230,7 @@ module Util
       :open_ga  => { :hour => 07, :min => 00 },
       :close_gb => { :hour => 12, :min => 30 },
       :close    => { :hour => 13, :min => 00 },
-      :close_ga => { :hour => 13, :min => 30 } }
+      :close_ga => { :hour => 14, :min => 00 } }
 
     # Helpers
     def MarketTime.BeforeHourMin?(time, hour, min)
