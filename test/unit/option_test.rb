@@ -7,10 +7,11 @@ class OptionTest < ActiveSupport::TestCase
       Option::PRIME = Util::ETime.new(2012, 1, 1)
       Option::Update(:AKAM)
     end
-
+    
     ActiveRecord::Base.transaction do
       Finance::DEFAULT_DATA_DRIVER = Finance::GoogleTicker
       Option::PRIME = Util::ETime.new(2012, 1, 1)
       Option::Update(:CSCO)
     end
+  end
 end

@@ -70,17 +70,14 @@ class Stock < ActiveRecord::Base
   end
 
   
-  def Stock.FetchAndLoad(symbol, start, stop, tickerDataDriver = Finance::DEFAULT_DATA_DRIVER)
+  def Stock.FetchAndLoad(symbol, start, stop)
     assert(symbol.kind_of?(String) || symbol.kind_of?(Symbol))
     assert(symbol.length()>0)
     assert(start.kind_of?(Util::ETime))
     assert(stop.kind_of?(Util::ETime))
     assert(!start.dateEqual?(stop))
-    assert(tickerDataDriver == Finance::YahooTicker ||
-           tickerDataDriver == Finance::GoogleTicker)
 
-
-    t = tickerDataDriver.new(symbol)
+    t = Finance::DEFAULT_DATA_DRIVER.new(symbol)
     
     sd = t.getHistoricalStockData(start, stop)
     assert(sd != nil)

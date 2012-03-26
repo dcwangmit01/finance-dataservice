@@ -2,7 +2,7 @@ require File.expand_path('../../config/environment',  __FILE__)
 
 module Dataservice
 
-  INDEXES = %w{GLD IVV SPY QQQ}
+  INDEXES = %w{GLD IVV SPY QQQ ^GSPC}
 
   SNP500 = %w{A AA AAPL ABC ABT ACE ACN ADBE ADI ADM ADP ADSK AEE AEP
     AES AET AFL AGN AIG AIV AIZ AKAM ALL ALTR AMAT AMD AMGN AMP AMT
@@ -69,7 +69,7 @@ module Dataservice
       # Update the Stock's Option Data First
       tickers.each do |ticker|
         # MHS is from NYSE or INDEXDJX:MHS
-        next if ticker.match(/BAC|BBY|BIG|C|CEG|GS|HAS|JPM|MS|NWL|MHS|WPO/)
+        #next if ticker.match(/BAC|BBY|BIG|C|CEG|GS|HAS|JPM|MS|NWL|MHS|WPO/)
         ActiveRecord::Base.transaction do
           Option::Update(ticker)
         end
@@ -77,7 +77,7 @@ module Dataservice
       
       # Update the Stock Data
       tickers.each do |ticker|
-        next if ticker.match(/BAC|BBY|BIG|C|CEG|GS|HAS|JPM|MS|NWL|MHS|WPO/)
+        #next if ticker.match(/BAC|BBY|BIG|C|CEG|GS|HAS|JPM|MS|NWL|MHS|WPO/)
         ActiveRecord::Base.transaction do
           Stock::Update(ticker)
         end

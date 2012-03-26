@@ -10,7 +10,7 @@ Log Configuration
   </pre_config>
   
   <!-- Outputters -->
-  <outputter name="console_outputter" type="StdoutOutputter" level="INFO" >
+  <outputter name="console_outputter" type="StdoutOutputter" level="DEBUG" >
     <formatter type="Log4r::PatternFormatter">
       <pattern>[%d %T] %M</pattern>
     </formatter>

@@ -176,7 +176,7 @@ module Finance
         # Load the data into the return value
         0.step(tds.length()-2,2) do |i|
           date=tds[i+0].text
-          value=tds[i+1].text.gsub(/\s+/, ' ').gsub(/: /, ':')
+          value=tds[i+1].text.gsub(/\s+/, ' ').gsub(/: /, ':').gsub(/,/, '')
           parts = value.split(" ")
           dataType = (parts[1].match(/dividend/i)) ? :dividends : :splits
           ret[dataType].push( { :value => parts[0],
@@ -241,7 +241,7 @@ module Finance
         end
         
         next_ret = self.parseOptionDataFromHtml(page.body)
-        ret.concat(next_ret)
+        ret = ret.concat(next_ret)
       end
 
       return ret
@@ -249,6 +249,7 @@ module Finance
 
     def parseOptionDateLinksFromHtml(html)
       ret = html.scan(/<a href="(\/q\/op\?s=\w+&amp;m=\d\d\d\d-\d\d)">/).map { |t| t.pop() }
+      ret = ret.map { |t| t.gsub(/&amp;/, '&') }
       return ret
     end
     
@@ -269,6 +270,8 @@ module Finance
         for table in tables do
           doc = Nokogiri::HTML('<html>' + table + '</html>')
           fields = doc.xpath('//td[@class="yfnc_h" or @class="yfnc_tabledata1"]').map { |td| 
+            
+            
             # Figure out if a change is negative
             is_positive = true
             begin
@@ -279,7 +282,9 @@ module Finance
               is_positive = true
             end
             # Change the sign
-            (is_positive == true) ? td.text : '-'+td.text
+            val = (is_positive == true) ? td.text : '-'+td.text
+            # Remove comma's
+            val.gsub(/,/, '')
           }
           assert(fields.length() % 8 == 0, "fields=[#{fields.to_yaml()}]")
         end
@@ -359,9 +364,8 @@ module Finance
 
           volume = nil
           begin
-            volume = Integer(fields[i+6].gsub(/,/, ''))
-            assert(volume != nil)
-            assert(Util::EMath::Numeric?(volume))
+            volume = (!Util::EMath::Numeric?(fields[i+6])) ? nil : Integer(fields[i+6])
+            assert(volume == nil || Util::EMath::Numeric?(volume))
           end
 
           interest = nil
