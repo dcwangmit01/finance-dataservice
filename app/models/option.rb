@@ -50,7 +50,7 @@ class Option < ActiveRecord::Base
       end
     end
 
-    logger.info("Skipping update of option"+
+    logger.info("Skipping update of option: "+
                 "symbol=[#{symbol}] " +
                 "")
     return

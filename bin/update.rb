@@ -9,7 +9,7 @@ module Dataservice
     AMZN AN ANF ANR AON APA APC APD APH APOL ARG ATI AVB AVP AVY AXP
     AZO BA BAC BAX BBBY BBT BBY BCR BDX BEAM BEN BF-B BHI BIG BIIB BK
     BLK BLL BMC BMS BMY BRCM BRK-B BSX BTU BWA BXP C CA CAG CAH CAM
-    CAT CB CBE CBG CBS CCE CCL CEG-PA CELG CERN CF CFN CHK CHRW CI CINF
+    CAT CB CBE CBG CBS CCE CCL CELG CERN CF CFN CHK CHRW CI CINF
     CL CLF CLX CMA CMCSA CME CMG CMI CMS CNP CNX COF COG COH COL COP
     COST COV CPB CRM CSC CSCO CSX CTAS CTL CTSH CTXS CVC CVH CVS CVX D
     DD DE DELL DF DFS DGX DHI DHR DIS DISCA DLTR DNB DNR DO DOV DOW
@@ -66,9 +66,6 @@ module Dataservice
         end
       end
       
-      # grep -i "No option data" production.log | perl -e 'while(<>) { $_ =~ /symbol=\[(\w+)\]/; print $1."\n" }'|sort|uniq
-      #  BAC|BBY|BIG|C|CEG|GS|HAS|JPM|MS
-      
       if true
 
         # Update the Stock's Option Data First
@@ -80,7 +77,7 @@ module Dataservice
       end
 
 
-      if false
+      if true
       # Update the Stock Data
         tickers.each do |symbol|
           ActiveRecord::Base.transaction do
