@@ -10,3 +10,6 @@ rails generate model Ticker name:string ticker_type:string exchange:string
 rails generate model Stock name:string open:integer high:integer low:integer close:integer volume:integer split:integer date:date
 rails generate model Option name:string underlying:string option_type:string exp:date strike:integer price:integer change:integer bid:integer ask:integer volume:integer interest:integer date:date
 rails generate model AppSetting key:string value:string
+
+rails generate model Split symbol:string in:integer out:integer date:date
+rails generate model Dividend symbol:string value:integer date:date
