@@ -1,5 +1,5 @@
 require 'test_helper'
-require 'dataservice/google'
+require 'dataservice/util'
 require 'dataservice/finance'
 require 'pp'
 
@@ -93,15 +93,16 @@ class FinanceTest < ActiveSupport::TestCase
 
   def test_Finance_MarketDate_GetLastMarketDate()
 
-    lmd = Finance::MarketDate::GetLastMarketDate()
+    lmd = Finance::MarketDate::GetLastHistoricalMarketDate()
     logger.info(lmd)
 
-    lmd1 = Finance::MarketDate::GetLastMarketDate(Finance::YahooTicker)
-    logger.info(lmd1)
-    
-    lmd2 = Finance::MarketDate::GetLastMarketDate(Finance::GoogleTicker)
-    logger.info(lmd2)
-
+    if (false)
+      lmd1 = Finance::MarketDate::GetLastMarketDate(Finance::YahooTicker)
+      logger.info(lmd1)
+      
+      lmd2 = Finance::MarketDate::GetLastMarketDate(Finance::GoogleTicker)
+      logger.info(lmd2)
+    end
   end
 
   

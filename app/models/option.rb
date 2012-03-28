@@ -17,47 +17,43 @@ class Option < ActiveRecord::Base
     assert(symbol.kind_of?(String) || symbol.kind_of?(Symbol))
     assert(symbol.length()>0)
     
-    logger.info("Option.Update Starting "+
-                "symbol=[#{symbol}])");
-    
     # Create some variables used by the calculations
     now = Util::ETime.new()
-    lmd = Finance::MarketDate::GetLastMarketDate()        
+    lmd = Finance::MarketDate::GetLastHistoricalMarketDate()
+    r = Option::GetLastRecord(symbol)
+
+    logger.info("Option.Update Starting: "+
+                "symbol=[#{symbol}] " +
+                "lastrecorddate=["+((r==nil)? 'nil' : Util::ETime::FromDate(r.date).to8601Str())+"] " +
+                "lmd=[#{lmd}] " +
+                "now=[#{now.to8601Str()}] " +
+                "weekday?=[#{now.weekday?()}] " +
+                "grace?=[#{Util::MarketTime::Grace?(now)}] " +
+                "open?=[#{Util::MarketTime::Open?(now)}] " +
+                "opengrace?=[#{Util::MarketTime::OpenGrace?(now)}] " +
+                "closegrace?=[#{Util::MarketTime::CloseGrace?(now)}] " +
+                "")
     
-    # Break out if it is not the right time to update
-    #   Only update the options during non-trading times
-    if (now.weekday?() && (Util::MarketTime::Grace?(now) || Util::MarketTime::Open?(now)))
-      logger.info("Breaking out because market is currently active "+
-                  "now=[#{now.to8601Str()}] " +
-                  "weekday?=[#{now.weekday?()}] " +
-                  "grace?=[#{Util::MarketTime::Grace?(now)}] " +
-                  "open?=[#{Util::MarketTime::Open?(now)}] " +
-                  "opengrace?=[#{Util::MarketTime::OpenGrace?(now)}] " +
-                  "closegrace?=[#{Util::MarketTime::CloseGrace?(now)}] " +
-                  "")
-
-      return
-    end
-
-    # If we get here, then there might be something to update
-    begin
-      r = Option::GetLastRecord(symbol)
+    if (now.dateEqual?(lmd) && Util::MarketTime::AfterClose?(now))
       if (r == nil)
-        # we definitely need to update
+        logger.info("Loading first options data for option: " +
+                    "symbol=[#{symbol}]: ")
         Option::FetchAndLoad(symbol, lmd)
-      else
-        dateoflast = Util::ETime::FromDate(r.date)
-        if (dateoflast.dateEqual?(lmd))
-          # update already happened
-          logger.info("Skipping unnecessary historical update for option: " +
-                      "symbol=[#{symbol}]: " +
-                      "dateoflast=[#{dateoflast.toDateStr()}] " +
-                      "lmd=[#{lmd.toDateStr()}]")
-        else
-          Option::FetchAndLoad(symbol, lmd)
-        end
+        return
+      end
+
+      if (!lmd.dateEqual?(Util::ETime::FromDate(r.date)))
+        logger.info("Loading daily options data for option: " +
+                    "symbol=[#{symbol}]: ")
+        Option::FetchAndLoad(symbol, lmd)
+        return
       end
     end
+
+    logger.info("Skipping update of option"+
+                "symbol=[#{symbol}] " +
+                "")
+    return
   end    
      
   def Option::FetchAndLoad(symbol, date)

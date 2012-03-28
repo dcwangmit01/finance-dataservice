@@ -51,7 +51,7 @@ class Stock < ActiveRecord::Base
       end
     end
     
-    stop = Finance::MarketDate::GetLastMarketDate()
+    stop = Finance::MarketDate::GetLastHistoricalMarketDate()
     if (start.dateBefore?(stop))
       logger.info("Starting historical update for stock: " +
                   "symbol=[#{symbol}]: " +

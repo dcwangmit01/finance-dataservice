@@ -400,14 +400,12 @@ module Finance
 
 
   class MarketDate
+    CHECK_PERIOD_SECONDS = 30*60
+
     DATE    = 'Cache.MarketData.LastMarketDateTime.value'
     UPDATED = 'Cache.MarketData.LastMarketDateTime.updated'
 
-    def MarketDate.GetLastMarketDate(tickerDataDriver = Finance::DEFAULT_DATA_DRIVER)
-      assert(tickerDataDriver == Finance::YahooTicker ||
-             tickerDataDriver == Finance::GoogleTicker)
-
-      # return Util::ETime.new(2012, 03, 27)
+    def MarketDate.GetLastHistoricalMarketDate()
       
       begin # Prime a non-existent appSetting
         if (!AppSetting::Exists(DATE))
@@ -422,75 +420,52 @@ module Finance
 
       # Create some variables used by the calculations
       now = Util::ETime.new()
-      up = Util::ETime::From8601Str(AppSetting::Get(UPDATED).value)
+      prevUpdated = Util::ETime::From8601Str(AppSetting::Get(UPDATED).value)
+      prevLmd = Util::ETime::From8601Str(AppSetting::Get(DATE).value)
       
-      # figure out if and why we need to update the historical data,
-      # and set variables msg and dirty
-      msg = ""
-      dirty = false
-      begin 
-        if (now.weekend?())
-          if (!up.dateEqual?(now))
-            msg = ("Updating LastMarketDate: " +
-                   "weekend " +
-                   "up=[#{up.to8601Str()}] ne now=[#{now.to8601Str()}]")
-            dirty = true
-          end
-        elsif (now.weekday?())
-          if (# if has not checked today
-              !up.dateEqual?(now) &&
-              # && the time is before market close grace time
-              Util::MarketTime::BeforeClose?(now) && !Util::MarketTime::CloseGrace?(now))
-            msg = ("Updating LastMarketDate: " +
-                   "weekday before market close " +
-                   "up=[#{up.to8601Str()}] now=[#{now.to8601Str()}]")
-            dirty = true
-          elsif (# if the time is now after market close grace time
-                 Util::MarketTime::AfterClose?(now) && !Util::MarketTime::CloseGrace?(now) &&
-                 # && the last time we checked is before market close
-                 Util::MarketTime::BeforeClose?(up))
-            msg = ("Updating LastMarketDate: " +
-                   "weekday after market close " +
-                   "up=[#{up.to8601Str()}] now=[#{now.to8601Str()}]")
-            dirty = true
-          end
-        end
+      # Break out early if we don't need to update
+      if (now.weekday?() && now.dateEqual?(prevLmd))
+        return prevLmd
+      end
+      if (now.weekday?() && Util::MarketTime::BeforeClose?(now) && now.cloneLastWeekday().dateEqual?(prevLmd))
+        return prevLmd
+      end
+      if (now.weekend?() && now.cloneLastWeekday().dateEqual?(prevLmd))
+        return prevLmd
+      end
+      if (now.before?(prevUpdated.cloneDiffSeconds(CHECK_PERIOD_SECONDS)))
+        # we have updated recently
+        return prevLmd
       end
 
-      prevLmd = Util::ETime::From8601Str(AppSetting::Get(DATE).value)
-      if (!dirty)
-        # If there is no updated needed, then return the previous
-        # lastModifiedDate
-        return prevLmd
-      else
-        newLmd = nil
-        begin
-          # Fetch the latest historical data from a common ticker, to
-          # get the last date
-          t = tickerDataDriver.new('C')
-          # 8 days ago
-          s = Util::ETime.now().cloneDiffSeconds(-8*60*60*24)
-          # 1 day ago
-          e = Util::ETime.now().cloneDiffSeconds(-1*60*60*24)
-          sd = t.getHistoricalStockData(s, e)
-          assert(sd != nil)
-          assert(sd.length()>0)
-          newLmd = sd.pop()[:date] # get last date
-          assert(newLmd.kind_of?(Util::ETime))
-        end
-        
+      newLmd = nil
+      begin
+        # Fetch the latest historical data from a common ticker, to
+        # get the last date
+        t = Finance::DEFAULT_DATA_DRIVER.new('C')
+        # 8 days ago
+        s = Util::ETime.now().cloneDiffSeconds(-8*60*60*24)
+        # 1 day ago
+        e = Util::ETime.now().cloneDiffSeconds(-1*60*60*24)
+        sd = t.getHistoricalStockData(s, e)
+        assert(sd != nil)
+        assert(sd.length()>0)
+        newLmd = sd.pop()[:date] # get last date
+        assert(newLmd.kind_of?(Util::ETime))
+      
         # Set the fields in the database
         ActiveRecord::Base.transaction do
           AppSetting::Set(DATE,    newLmd.to8601Str())
           AppSetting::Set(UPDATED, now.to8601Str())
           logger.info("Updating LastMarketDate " +
                       "prevLmd=[#{prevLmd.to8601Str()}] " +
+                      "prevUpdated=[#{prevUpdated.to8601Str()}] " +
                       "newLmd=[#{newLmd.to8601Str()}] " +
-                      "updated=[#{now.to8601Str()}]")
+                      "newUpdated=[#{now.to8601Str()}]")
         end
-        
-        return newLmd
       end
+
+      return newLmd
     end
 
     def MarketDate.logger()

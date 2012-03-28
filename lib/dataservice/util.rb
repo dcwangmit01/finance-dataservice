@@ -124,6 +124,15 @@ module Util
       return ETime.at(self.to_f()+secs)
     end
 
+    def cloneLastWeekday()
+      ret = self.cloneDiffSeconds(-24*60*60)
+      while !(ret.weekday?())
+        ret = ret.cloneDiffSeconds(-24*60*60)
+      end
+      assert(ret.kind_of?(ETime))
+      return ret
+    end
+
     # DateTime comparisons
     def equal?(t)
       assert(t.kind_of?(ETime))
