@@ -49,6 +49,10 @@ class Option < ActiveRecord::Base
         dateoflast = Util::ETime::FromDate(r.date)
         if (dateoflast.dateEqual?(lmd))
           # update already happened
+          logger.info("Skipping unnecessary historical update for option: " +
+                      "symbol=[#{symbol}]: " +
+                      "dateoflast=[#{dateoflast.toDateStr()}] " +
+                      "lmd=[#{lmd.toDateStr()}]")
         else
           Option::FetchAndLoad(symbol, lmd)
         end

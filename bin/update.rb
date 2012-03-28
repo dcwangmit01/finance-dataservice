@@ -7,9 +7,9 @@ module Dataservice
   SNP500 = %w{A AA AAPL ABC ABT ACE ACN ADBE ADI ADM ADP ADSK AEE AEP
     AES AET AFL AGN AIG AIV AIZ AKAM ALL ALTR AMAT AMD AMGN AMP AMT
     AMZN AN ANF ANR AON APA APC APD APH APOL ARG ATI AVB AVP AVY AXP
-    AZO BA BAC BAX BBBY BBT BBY BCR BDX BEAM BEN BFB BHI BIG BIIB BK
-    BLK BLL BMC BMS BMY BRCM BRK.B BSX BTU BWA BXP C CA CAG CAH CAM
-    CAT CB CBE CBG CBS CCE CCL CEG CELG CERN CF CFN CHK CHRW CI CINF
+    AZO BA BAC BAX BBBY BBT BBY BCR BDX BEAM BEN BF-B BHI BIG BIIB BK
+    BLK BLL BMC BMS BMY BRCM BRK-B BSX BTU BWA BXP C CA CAG CAH CAM
+    CAT CB CBE CBG CBS CCE CCL CEG-PA CELG CERN CF CFN CHK CHRW CI CINF
     CL CLF CLX CMA CMCSA CME CMG CMI CMS CNP CNX COF COG COH COL COP
     COST COV CPB CRM CSC CSCO CSX CTAS CTL CTSH CTXS CVC CVH CVS CVX D
     DD DE DELL DF DFS DGX DHI DHR DIS DISCA DLTR DNB DNR DO DOV DOW
@@ -46,44 +46,50 @@ module Dataservice
       tickers.concat(INDEXES)
       tickers.concat(SNP500)
 
-      # Ensure that all the tickers exist
-      tickers.each do |ticker|
-        if (!Ticker::Exists(ticker))
-          logger.info("Creating Ticker in DB "+
-                      "ticker=[#{ticker}]")
-          # Create it in the DB
+      #tickers = [:AKAM]
+
+      if false
+        # Ensure that all the tickers exist
+        tickers.each do |symbol|
+          if (!Ticker::Exist?(symbol))
+            logger.info("Creating Ticker in DB "+
+                        "symbol=[#{symbol}]")
+            # Create it in the DB
+            ActiveRecord::Base.transaction do
+              t1 = Ticker.new()
+              t1.symbol = symbol
+              t1.symbol_type = :stock
+              t1.status = :active
+              t1.save()
+            end
+          end
+        end
+      end
+      
+      # grep -i "No option data" production.log | perl -e 'while(<>) { $_ =~ /symbol=\[(\w+)\]/; print $1."\n" }'|sort|uniq
+      #  BAC|BBY|BIG|C|CEG|GS|HAS|JPM|MS
+      
+      if true
+
+        # Update the Stock's Option Data First
+        tickers.each do |symbol|
           ActiveRecord::Base.transaction do
-            t1 = Ticker.new()
-            t1.name = ticker
-            t1.ticker_type = :stock
-            t1.status = :active
-            t1.save()
+            Option::Update(symbol)
           end
         end
       end
 
-      
-      # grep -i "No option data" production.log | perl -e 'while(<>) { $_ =~ /ticker=\[(\w+)\]/; print $1."\n" }'|sort|uniq
-      #  BAC|BBY|BIG|C|CEG|GS|HAS|JPM|MS
-      
-      # Update the Stock's Option Data First
-      tickers.each do |ticker|
-        # MHS is from NYSE or INDEXDJX:MHS
-        #next if ticker.match(/BAC|BBY|BIG|C|CEG|GS|HAS|JPM|MS|NWL|MHS|WPO/)
-        ActiveRecord::Base.transaction do
-          Option::Update(ticker)
-        end
-      end
-      
-      # Update the Stock Data
-      tickers.each do |ticker|
-        #next if ticker.match(/BAC|BBY|BIG|C|CEG|GS|HAS|JPM|MS|NWL|MHS|WPO/)
-        ActiveRecord::Base.transaction do
-          Stock::Update(ticker)
-        end
-      end
 
+      if false
+      # Update the Stock Data
+        tickers.each do |symbol|
+          ActiveRecord::Base.transaction do
+            Stock::Update(symbol)
+          end
+        end
+      end
     end
+
     
     def logger
       return Rails.logger

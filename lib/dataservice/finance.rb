@@ -269,8 +269,7 @@ module Finance
 
         for table in tables do
           doc = Nokogiri::HTML('<html>' + table + '</html>')
-          fields = doc.xpath('//td[@class="yfnc_h" or @class="yfnc_tabledata1"]').map { |td| 
-            
+          tmpFields = doc.xpath('//td[@class="yfnc_h" or @class="yfnc_tabledata1"]').map { |td| 
             
             # Figure out if a change is negative
             is_positive = true
@@ -286,9 +285,10 @@ module Finance
             # Remove comma's
             val.gsub(/,/, '')
           }
-          assert(fields.length() % 8 == 0, "fields=[#{fields.to_yaml()}]")
+          assert(tmpFields.length() % 8 == 0, "tmpFields=[#{tmpFields.to_yaml()}]")
+          fields.concat(tmpFields)
         end
-      rescue
+      rescue => e
         logger.error("Failed to parse option data from html=[#{html}] e=[#{e}] e.backtrace=[#{e.backtrace().to_yaml()}]") 
         return nil
       end
@@ -309,7 +309,8 @@ module Finance
             assert(!Util::EMath::Numeric?(symbol))
           end
 
-          parts = symbol.scan(/^(\w+)(\d{2})(\d{2})(\d{2})(\w)(\d{8})$/).pop()
+          # The non-match is for split adjusted options
+          parts = symbol.scan(/^(\D+)\d*?(\d{2})(\d{2})(\d{2})(\w)(\d{8})$/).pop()
           assert(parts.length() == 6, "parts.length[#{parts.length()}] parts.yaml[#{parts.to_yaml()}]")
 
           strike = nil
@@ -405,6 +406,8 @@ module Finance
     def MarketDate.GetLastMarketDate(tickerDataDriver = Finance::DEFAULT_DATA_DRIVER)
       assert(tickerDataDriver == Finance::YahooTicker ||
              tickerDataDriver == Finance::GoogleTicker)
+
+      # return Util::ETime.new(2012, 03, 27)
       
       begin # Prime a non-existent appSetting
         if (!AppSetting::Exists(DATE))

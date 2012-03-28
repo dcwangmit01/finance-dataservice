@@ -40,10 +40,11 @@ class Stock < ActiveRecord::Base
         start = PRIME
         logger.info("Priming historical update for stock: " +
                     "symbol=[#{symbol}]: " +
+                    "lastRecordDate=[nil] " + 
                     "start=[#{start.toDateStr()}]")
       else
         # History does exist
-        start = Util::ETime::FromDate(s.date)
+        start = Util::ETime::FromDate(s.date+1)
         logger.info("Found last historical update for stock: " +
                     "symbol=[#{symbol}]: " +
                     "start=[#{start.toDateStr()}]")
