@@ -446,7 +446,7 @@ module Finance
         # 8 days ago
         s = Util::ETime.now().cloneDiffSeconds(-8*60*60*24)
         # 1 day ago
-        e = Util::ETime.now().cloneDiffSeconds(-1*60*60*24)
+        e = now
         sd = t.getHistoricalStockData(s, e)
         assert(sd != nil)
         assert(sd.length()>0)
