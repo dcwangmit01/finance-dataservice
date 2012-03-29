@@ -37,15 +37,17 @@ class CreateTables < ActiveRecord::Migration
 
     create_table :splits do |t|
       t.string  :symbol,     :null => false
-      t.integer :split_a,    :null => false, :default => 0
-      t.integer :split_b,    :null => false, :default => 0
+      t.integer :in,         :null => false, :default => 0
+      t.integer :out,        :null => false, :default => 0
       t.date    :date,       :null => false
+      t.timestamps
     end
 
     create_table :dividends do |t|
       t.string  :symbol,     :null => false
-      t.integer :dividend,   :null => false, :default => 0
+      t.integer :value,      :null => false, :default => 0
       t.date    :date,       :null => false
+      t.timestamps
     end
     
     create_table :options do |t|
