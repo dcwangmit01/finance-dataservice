@@ -1,4 +1,3 @@
-
 == Overview ==
 
 Given a list of financial tickers, this application will fetch stock,
@@ -16,7 +15,6 @@ XML formats.
 
 * List all Stocks for which data is available
 
-** CSV
   wget -O - 'https://dataservice.yourdomain.com/stocks/index.csv'
 
   symbol
@@ -27,15 +25,14 @@ XML formats.
   ACN
   ...
 
-** JSON
   wget -O - 'https://dataservice.yourdomain.com/stocks/index.json'
 
   [{"symbol":"A"},{"symbol":"AA"},{"symbol":"AAPL"},
   ...
 
-** XML
   wget -O - 'https://dataservice.yourdomain.com/stocks/index.xml'
 
+ <nowiki>
   <?xml version="1.0" encoding="UTF-8"?>
   <stocks type="array">
     <stock>
@@ -45,9 +42,9 @@ XML formats.
       <symbol>ABC</symbol>
     </stock>
   ...
+</nowiki>
 
-
-* Download stock data as CSV for a particular underlying between certain dates, limiting to 10 '''(change the export.<suffix> for XML and JSON formats)'''
+* Download stock data as CSV for a particular underlying between certain dates, limiting to 10 '''(change the export.SUFFIX for XML and JSON formats)'''
   wget -O - 'https://dataservice.yourdomain.com/stocks/export.csv?symbol=csco&start_date=2012-01-01&end_date=2012-02-01&limit=10'
 
   id,symbol,open,high,low,close,volume,date,created_at,updated_at
@@ -77,6 +74,7 @@ XML formats.
 * Download a list of options prices for a particular underlying and option put symbol between certain dates
   wget -O - 'https://dataservice.yourdomain.com/options/export.xml?underlying=csco&symbol=CSCO130119P00015000&underlying=csco&date=2012-03-26&start_date=2012-01-01&end_date=2013-01-01&limit=365&option_type=put'
 
+ <nowiki>
   <?xml version="1.0" encoding="UTF-8"?>
   <options type="array">
     <option>
@@ -97,31 +95,32 @@ XML formats.
       <volume type="integer">835</volume>
     </option>
   </options>
+</nowiki>
 
 ==== Query Filter Strings ====
 
 HTTP query strings allow filtering parameters
 
-* Stocks: (see code in ~/finance-dataservice/app/controllers/stocks_controller.rb)
-** symbol
-** limit
-** date
-** start_date
-** end_date
-* Options: (see code in ~/finance-dataservice/app/controllers/options_controller.rb)
-** underlying
-** symbol
-** limit
-** option_type
-** date
-** start_date
-** end_date
-** expiration
-** start_expiration
-** end_expiration
-** strike
-** start_strike
-** end_strike
+* Parameters for Stocks Export: https://dataservice.yourdomain.com/stocks/export.csv (see controller code in ~/finance-dataservice/app/controllers/stocks_controller.rb)
+** symbol - stock security symbol (e.g. csco, akam)
+** limit - maximum number of records to return (e.g. 10)
+** date - limit return of records to this specific date (e.g. 2011-12-31)
+** start_date - limit return of records after this inclusive date
+** end_date - limit return of records before this inclusive date
+* Parameters for Options Export: https://dataservice.yourdomain.com/options/export.xml (see controller code in ~/finance-dataservice/app/controllers/options_controller.rb)
+** underlying - underlying stock symbol (e.g. csco, akam)
+** symbol - option security symbol (e.g. CSCO120330C00019000)
+** limit - maximum number of records to return (e.g. 10)
+** option_type - limit return of options records to "put" or "call" types
+** date - limit return of records to this specific date (e.g. 2011-12-31)
+** start_date - limit return of records after this inclusive date
+** end_date - limit return of records before this inclusive date
+** expiration - limit return of records to a specific expiration date
+** start_expiration - limit return of records after this inclusive expiration date
+** end_expiration - limit return of records after this inclusive expiration date
+** strike - limit return of records to a specific strike price
+** start_strike - limit return of records greater than this inclusive strike price
+** end_strike- limit return of records less than this inclusive strike price
 
 === Data Collection Service ===
 
@@ -135,7 +134,7 @@ HTTP query strings allow filtering parameters
 
 == Installation ==
 
-* Clone a new linux machine (Ubuntu 10.04 LTS)
+* Install or Clone a new linux machine (Ubuntu 10.04 LTS)
 * Install some utils
   sudo apt-get update
   sudo apt-get install curl git bash
@@ -153,7 +152,7 @@ HTTP query strings allow filtering parameters
 * Install Mysql
   sudo apt-get install mysql-server mysql-client libmysql-ruby libmysqlclient-dev
   sudo apt-get install nodejs
-* Install ruby
+* Install Ruby
   rvm install 1.9.3
 * Set the default ruby to be your favorite version
   rvm --default use 1.9.3
@@ -187,4 +186,4 @@ Issues
 * I run the data gathering script in a bash while loop.  It probably needs to be a crond task or a Ruby "service".
 * Log files are unmanaged
 * There is some leftover code for using Google Finance as the data provider.  It's partially broken.  However, the Google Finanace provides seriously inaccurate data... outrignt missing historical data etc.  Don't use it.
-
+* Library code for gather dividends and splits from Yahoo is written, but not hooked up with the data collector script.
