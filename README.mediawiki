@@ -15,6 +15,7 @@ JSON, or XML formats.
 
 * List all Stocks for which data is available
 
+  # CSV Format Example
   wget -O - 'https://dataservice.yourdomain.com/stocks/index.csv'
 
   symbol
@@ -25,11 +26,13 @@ JSON, or XML formats.
   ACN
   ...
 
+  # JSON Format Example
   wget -O - 'https://dataservice.yourdomain.com/stocks/index.json'
 
   [{"symbol":"A"},{"symbol":"AA"},{"symbol":"AAPL"},
   ...
 
+  # XML Format Example
   wget -O - 'https://dataservice.yourdomain.com/stocks/index.xml'
 
  <nowiki>
@@ -186,4 +189,4 @@ Issues
 * I run the data gathering script in a bash while loop.  It probably needs to be a crond task or a Ruby "service".
 * Log files are unmanaged
 * There is some leftover code for using Google Finance as the data provider.  It's partially broken.  However, the Google Finance provides seriously inaccurate data... outright missing historical data etc.  Don't use it.
-* Library code for gather dividends and splits from Yahoo is written, but not hooked up with the data collector script.
+* Library code for gathering dividends and splits from Yahoo is written, but not hooked up with the data collector script.
