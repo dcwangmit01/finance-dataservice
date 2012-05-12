@@ -166,7 +166,7 @@ HTTP query strings allow filtering parameters
   # then install the rest
   bundle install
 * Clone the repository
-  git clone ssh://you@yourdomain.com:<portnumber>/var/git/dataservice
+  git clone git://github.com/dcwangmit01/finance-dataservice.git
   git config --global user.name "First Last"
   git config --global user.email "you@yourdomain.com"
 * Test
