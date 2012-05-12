@@ -1,5 +1,4 @@
 
-
 http://ichart.finance.yahoo.com/table.csv?s=AKAM&a=01&b=6&c=2004&d=03&e=7&f=2012&g=d&ignore=.csv
 
 Feb 6 2004 to Apr 7 2012

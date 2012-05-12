@@ -1,6 +1,3 @@
-YahooFinance Module: http://www.transparentech.com/opensource/yahoofinance
-gem install yahoofinance
-
 rails destroy model Ticker
 rails destroy model Stock
 rails destroy model Option
@@ -13,3 +10,5 @@ rails generate model AppSetting key:string value:string
 
 rails generate model Split symbol:string in:integer out:integer date:date
 rails generate model Dividend symbol:string value:integer date:date
+
+

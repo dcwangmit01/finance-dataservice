@@ -30,9 +30,9 @@
 
 
 * Clone the repository
-  git clone ssh://dave@s.davidwang.com:2222/var/git/dataservice
-  git config --global user.name "David Wang"
-  git config --global user.email "dcwangmit01@gmail.com"
+  git clone ssh://you@yourdomain.com:<portnumber>/var/git/dataservice
+  git config --global user.name "First Last"
+  git config --global user.email "you@yourdomain.com"
 
 
 * Test
