@@ -16,7 +16,7 @@ module Util
   class EMechanize < Mechanize
 
     THROTTLE_MIN = 1
-    THROTTLE_MAX = 5
+    THROTTLE_MAX = 3
     
     def get(uri, parameters = [], referer = nil, headers = {})
       sleepTime = Random.rand(THROTTLE_MIN..THROTTLE_MAX)
