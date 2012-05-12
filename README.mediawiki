@@ -1,10 +1,10 @@
 == Overview ==
 
-Given a list of financial tickers, this application will fetch stock,
-option, dividend, and split data from Yahoo Finance and store
-everything in a Mysql Database. A backend webservice provides filtered
-access to the data over a simple web-based API served as CSV, JSON, or
-XML formats.
+Given a list of financial tickers, this Rails application will fetch
+stock, option, dividend, and split data from Yahoo Finance and store
+everything in a MySql Database. A backend web service provides
+filtered access to the data over a simple web-based API served as CSV,
+JSON, or XML formats.
 
 
 == Usage ==
@@ -149,7 +149,7 @@ HTTP query strings allow filtering parameters
       libyaml-dev libsqlite3-0 libsqlite3-dev sqlite3 libxml2-dev \
       libxslt-dev autoconf libc6-dev ncurses-dev automake libtool \
       bison subversion
-* Install Mysql
+* Install MySql
   sudo apt-get install mysql-server mysql-client libmysql-ruby libmysqlclient-dev
   sudo apt-get install nodejs
 * Install Ruby
@@ -176,14 +176,14 @@ License
 * http://www.opensource.org/licenses/mit-license.php
 
 '''This project is not production quality code.'''
-* It's a basic home project I used to understand the Ruby and Rails hype.
+* Regarding quality: I wouldn't count on this home project, whose purpose is to understand the Ruby and Rails hype.
 * The code is ugly and I don't plan on investing in this project beyond what is minimally useful, so feel free to clone and own it.
 
 Issues
 * The default Rails WEBrick server leaks memory and eventually crashes.  You should use a different server.
-* The RESTful webapi is susceptable to SQL injection attacks, since HTTP GET args are fed directly to the DB query.
+* The RESTful webapi is susceptible to SQL injection attacks, since HTTP GET args are fed directly to the DB query.
 * Please make sure you protect the webapi with SSL and at least HTTP Basic Auth.
 * I run the data gathering script in a bash while loop.  It probably needs to be a crond task or a Ruby "service".
 * Log files are unmanaged
-* There is some leftover code for using Google Finance as the data provider.  It's partially broken.  However, the Google Finanace provides seriously inaccurate data... outrignt missing historical data etc.  Don't use it.
+* There is some leftover code for using Google Finance as the data provider.  It's partially broken.  However, the Google Finance provides seriously inaccurate data... outright missing historical data etc.  Don't use it.
 * Library code for gather dividends and splits from Yahoo is written, but not hooked up with the data collector script.
